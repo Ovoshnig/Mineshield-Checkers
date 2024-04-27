@@ -162,7 +162,7 @@ public class CheckersVisualizer : MonoBehaviour
         Transform figureTransform = _figureTransforms[i, j];
         Vector3 figurePosition = figureTransform.position;
 
-        float expiredTime = 0;
+        float expiredTime = 0f;
 
         while (expiredTime < _jumpDuration)
         {
