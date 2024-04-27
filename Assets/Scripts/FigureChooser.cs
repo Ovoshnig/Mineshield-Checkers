@@ -89,8 +89,8 @@ public class FigureChooser : MonoBehaviour
 
     public void MakeAChoice()
     {
-        GameObject choosenFigure = _figurePrefabs[_currentIndex];
-        CheckersVisualizer._playerFigures[0] = choosenFigure;
+        GameObject chosenFigure = _figurePrefabs[_currentIndex];
+        CheckersVisualizer._playerFigures[0] = chosenFigure;
 
         SceneManager.LoadScene("Checkers");
     }
