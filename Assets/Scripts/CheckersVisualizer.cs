@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CheckersLogic))]
 public class CheckersVisualizer : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed;
@@ -15,6 +16,8 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private GameObject _crownPrefab;
     [SerializeField] private GameObject _selectionCube;
 
+    private CheckersLogic _logic;
+
     public static readonly GameObject[] _playerFigures = new GameObject[2];
     private readonly Transform[,] _figureTransforms = new Transform[8, 8];
 
@@ -25,20 +28,26 @@ public class CheckersVisualizer : MonoBehaviour
     private Vector3 _startPosition;
     private Vector3 _endPosition;
 
+    private void OnValidate() => _logic ??= FindObjectOfType<CheckersLogic>();
+
     private void OnEnable()
     {
-        CheckersLogic.FigurePlacedEvent += PlaceFigure;
-        CheckersLogic.FigureMovedEvent += Move;
-        CheckersLogic.FigureChoppedEvent += Chop;
-        CheckersLogic.GameEndedEvent += PlayEndingAnimation;
+        _logic.FigurePlacedEvent += PlaceFigure;
+        _logic.FigureSelectedEvent += ChangeSelection;
+        _logic.FigureMovedEvent += Move;
+        _logic.FigureChoppedEvent += Chop;
+        _logic.DamCreatedEvent += CreateDam;
+        _logic.GameEndedEvent += PlayEndingAnimation;
     }
 
     private void OnDisable()
     {
-        CheckersLogic.FigurePlacedEvent -= PlaceFigure;
-        CheckersLogic.FigureMovedEvent -= Move;
-        CheckersLogic.FigureChoppedEvent -= Chop;
-        CheckersLogic.GameEndedEvent -= PlayEndingAnimation;
+        _logic.FigurePlacedEvent -= PlaceFigure;
+        _logic.FigureSelectedEvent -= ChangeSelection;
+        _logic.FigureMovedEvent -= Move;
+        _logic.FigureChoppedEvent -= Chop;
+        _logic.DamCreatedEvent -= CreateDam;
+        _logic.GameEndedEvent -= PlayEndingAnimation;
     }
 
     private void Awake()
@@ -86,18 +95,16 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = newFigure.transform;
     }
 
-    public void SetSelection(List<int> playerIndexes)
+    private void ChangeSelection(List<int> indexes, bool shoodSelect)
     {
-        var (i, j) = (playerIndexes[0], playerIndexes[1]);
+        if (shoodSelect)
+        {
+            var (i, j) = (indexes[0], indexes[1]);
 
-        Vector3 position = Indexes2Position(i, j);
-        _selectionCube.SetActive(true);
-        _selectionCube.transform.localPosition = position;
-    }
-
-    public void RemoveSelection()
-    {
-        _selectionCube.SetActive(false);
+            Vector3 position = Indexes2Position(i, j);
+            _selectionCube.transform.localPosition = position;
+        }
+        _selectionCube.SetActive(shoodSelect);
     }
 
     private async UniTask Move(List<int> turnIndex) 
@@ -148,7 +155,7 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = null;
     }
 
-    public void CreateDam()
+    private void CreateDam()
     {
         Transform childFigureTransform = _figureTransform.GetChild(0);
         Vector3 figurePosition = _figureTransform.position;

@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[RequireComponent(typeof(CheckersVisualizer))]
 [RequireComponent(typeof(PlayerInput))]
 public class CheckersLogic : MonoBehaviour
 {
@@ -13,18 +12,21 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private int _gameEndingDuration;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
+    public delegate void FigureSelected(List<int> selectIndexes, bool shoodSelect);
     public delegate UniTask FigureMoved(List<int> moveIndex);
     public delegate UniTaskVoid FigureChopped(List<int> chopIndex);
+    public delegate void DamCreated();
     public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration);
 
-    public static event FigurePlaced FigurePlacedEvent;
-    public static event FigureMoved FigureMovedEvent;
-    public static event FigureChopped FigureChoppedEvent;
-    public static event GameEnded GameEndedEvent;
+    public event FigurePlaced FigurePlacedEvent;
+    public event FigureSelected FigureSelectedEvent;
+    public event FigureMoved FigureMovedEvent;
+    public event FigureChopped FigureChoppedEvent;
+    public event DamCreated DamCreatedEvent;
+    public event GameEnded GameEndedEvent;
 
     private List<int> _inputStartPosition;
 
-    private CheckersVisualizer _visualizer;
     private PlayerInput _playerInput;
 
     private readonly int[,] _board = new int[8, 8];
@@ -34,12 +36,8 @@ public class CheckersLogic : MonoBehaviour
 
     private int _turn = 1;
 
-    private void Awake()
-    {
-        _visualizer = GetComponent<CheckersVisualizer>();
-        _playerInput = GetComponent<PlayerInput>();
-    }
-
+    private void OnValidate() => _playerInput ??= GetComponent<PlayerInput>();
+    
     private void Start()
     {
         StartPlacement().Forget();
@@ -325,7 +323,7 @@ public class CheckersLogic : MonoBehaviour
                 _inputStartPosition = new List<int>(inputPosition);
                 isStartPositionReceived = true;
 
-                _visualizer.SetSelection(_inputStartPosition);
+                FigureSelectedEvent?.Invoke(_inputStartPosition, true);
             }
             else if (isStartPositionReceived)
             {
@@ -344,7 +342,7 @@ public class CheckersLogic : MonoBehaviour
                     else
                         MakeMove(finding).Forget();
 
-                    _visualizer.RemoveSelection();
+                    FigureSelectedEvent?.Invoke(_inputStartPosition, false);
 
                     return;
                 }
@@ -353,7 +351,7 @@ public class CheckersLogic : MonoBehaviour
                     isStartPositionReceived = false;
                     _inputStartPosition = new();
 
-                    _visualizer.RemoveSelection();
+                    FigureSelectedEvent?.Invoke(_inputStartPosition, false);
                 }
             }
         }
@@ -361,7 +359,7 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTaskVoid WaitPlayerChopInput(List<List<int>> turnIndexes)
     {
-        _visualizer.SetSelection(_inputStartPosition);
+        FigureSelectedEvent?.Invoke(_inputStartPosition, true);
 
         List<int> inputEndPosition = new();
         List<int> finding = null;
@@ -383,7 +381,7 @@ public class CheckersLogic : MonoBehaviour
 
         MakeChopMove(finding).Forget();
 
-        _visualizer.RemoveSelection();
+        FigureSelectedEvent?.Invoke(_inputStartPosition, false);
     }
 
     private void SelectRandomMove(List<List<int>> turnIndexes, bool isChopping = false)
@@ -423,7 +421,7 @@ public class CheckersLogic : MonoBehaviour
             {
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
-                _visualizer.CreateDam();
+                DamCreatedEvent?.Invoke();
             }
             else
             {
@@ -472,7 +470,7 @@ public class CheckersLogic : MonoBehaviour
             {
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
-                _visualizer.CreateDam();
+                DamCreatedEvent?.Invoke();
             }
             else
             {

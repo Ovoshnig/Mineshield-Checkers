@@ -11,59 +11,58 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
 
+    private CheckersLogic _logic;
     private AudioSource _audioSource;
 
     private int _clipIndex;
 
+    private void OnValidate()
+    {
+        _logic ??= FindObjectOfType<CheckersLogic>();
+        _audioSource ??= GetComponent<AudioSource>();
+    }
+
     private void OnEnable()
     {
-        CheckersLogic.FigurePlacedEvent += PlayPutSound;
-        CheckersLogic.FigureMovedEvent += PlayMoveSound;
-        CheckersLogic.FigureChoppedEvent += PlayChopSound;
-        CheckersLogic.GameEndedEvent += PlayGameEndingSound;
+        _logic.FigurePlacedEvent += PlayPutSound;
+        _logic.FigureMovedEvent += PlayMoveSound;
+        _logic.FigureChoppedEvent += PlayChopSound;
+        _logic.GameEndedEvent += PlayGameEndingSound;
     }
 
     private void OnDisable()
     {
-        CheckersLogic.FigurePlacedEvent -= PlayPutSound;
-        CheckersLogic.FigureMovedEvent -= PlayMoveSound;
-        CheckersLogic.FigureChoppedEvent -= PlayChopSound;
-        CheckersLogic.GameEndedEvent -= PlayGameEndingSound;
-    }
-
-    private void Awake()
-    {
-        _audioSource = GetComponent<AudioSource>();
+        _logic.FigurePlacedEvent -= PlayPutSound;
+        _logic.FigureMovedEvent -= PlayMoveSound;
+        _logic.FigureChoppedEvent -= PlayChopSound;
+        _logic.GameEndedEvent -= PlayGameEndingSound;
     }
 
     private async UniTaskVoid PlayPutSound(int i, int j, int index)
     {
         _clipIndex = Random.Range(0, _putClips.Length);
-        _audioSource.clip = _putClips[_clipIndex];
 
         await UniTask.Yield();
 
-        _audioSource.Play();
+        _audioSource.PlayOneShot(_putClips[_clipIndex]);
     }
 
     private async UniTask PlayMoveSound(List<int> moveIndex)
     {
         _clipIndex = Random.Range(0, _dragClips.Length);
-        _audioSource.clip = _dragClips[_clipIndex];
 
         await UniTask.Yield();
 
-        _audioSource.Play();
+        _audioSource.PlayOneShot(_dragClips[_clipIndex]);
     }
 
     private async UniTaskVoid PlayChopSound(List<int> chopIndex)
     {
         _clipIndex = Random.Range(0, _chopClips.Length);
-        _audioSource.clip = _chopClips[_clipIndex];
 
         await UniTask.Yield();
 
-        _audioSource.Play();
+        _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }
 
     private async UniTaskVoid PlayGameEndingSound(int winnerTurn, int gameEndingDuration)
