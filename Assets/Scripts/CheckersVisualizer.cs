@@ -16,7 +16,6 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private GameObject _selectionCube;
 
     public static readonly GameObject[] _playerFigures = new GameObject[2];
-
     private readonly Transform[,] _figureTransforms = new Transform[8, 8];
 
     private Transform _figureTransform;
@@ -29,12 +28,16 @@ public class CheckersVisualizer : MonoBehaviour
     private void OnEnable()
     {
         CheckersLogic.FigurePlacedEvent += PlaceFigure;
+        CheckersLogic.FigureMovedEvent += Move;
+        CheckersLogic.FigureChoppedEvent += Chop;
         CheckersLogic.GameEndedEvent += PlayEndingAnimation;
     }
 
     private void OnDisable()
     {
         CheckersLogic.FigurePlacedEvent -= PlaceFigure;
+        CheckersLogic.FigureMovedEvent -= Move;
+        CheckersLogic.FigureChoppedEvent -= Chop;
         CheckersLogic.GameEndedEvent -= PlayEndingAnimation;
     }
 
@@ -71,7 +74,7 @@ public class CheckersVisualizer : MonoBehaviour
         return position;
     }
 
-    public async UniTaskVoid PlaceFigure(int i, int j, int index)
+    private async UniTaskVoid PlaceFigure(int i, int j, int index)
     {
         Vector3 position = Indexes2Position(i, j);
         var newFigure = Instantiate(_playerFigures[index], position, Quaternion.Euler(0, 0, 0));
@@ -97,7 +100,7 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(false);
     }
 
-    public async UniTask Move(List<int> turnIndex) 
+    private async UniTask Move(List<int> turnIndex) 
     {
         var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
 
@@ -114,7 +117,7 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = null;
     }
 
-    public async UniTask MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
+    private async UniTask MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
     {
         float elapsedTime = 0f;
         float t;
@@ -132,8 +135,9 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform.position = endPosition;
     }
 
-    public async UniTask Chop(int i, int j)
+    private async UniTaskVoid Chop(List<int> chopIndex)
     {
+        var (i, j) = (chopIndex[0], chopIndex[1]);
         Vector3 rivalPosition = Indexes2Position(i, j);
         float distance = Vector3.Distance(_startPosition, rivalPosition);
         int removeDuration = (int)(1000 * distance / _moveSpeed);

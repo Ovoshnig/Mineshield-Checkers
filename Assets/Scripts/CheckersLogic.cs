@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(CheckersVisualizer))]
-[RequireComponent(typeof(AudioPlayer))]
 [RequireComponent(typeof(PlayerInput))]
 public class CheckersLogic : MonoBehaviour
 {
@@ -14,15 +13,18 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private int _gameEndingDuration;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
+    public delegate UniTask FigureMoved(List<int> moveIndex);
+    public delegate UniTaskVoid FigureChopped(List<int> chopIndex);
     public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration);
 
     public static event FigurePlaced FigurePlacedEvent;
+    public static event FigureMoved FigureMovedEvent;
+    public static event FigureChopped FigureChoppedEvent;
     public static event GameEnded GameEndedEvent;
 
     private List<int> _inputStartPosition;
 
     private CheckersVisualizer _visualizer;
-    private AudioPlayer _audioPlayer;
     private PlayerInput _playerInput;
 
     private readonly int[,] _board = new int[8, 8];
@@ -35,7 +37,6 @@ public class CheckersLogic : MonoBehaviour
     private void Awake()
     {
         _visualizer = GetComponent<CheckersVisualizer>();
-        _audioPlayer = GetComponent<AudioPlayer>();
         _playerInput = GetComponent<PlayerInput>();
     }
 
@@ -69,8 +70,7 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        //EnumerateMoves();
-        Win(1).Forget();
+        EnumerateMoves();
     }
 
     private bool IsCanMove(int i, int j)
@@ -272,7 +272,8 @@ public class CheckersLogic : MonoBehaviour
                         {
                             if (rivalCount == 1)
                             {
-                                chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta, rivalIndexes[0], rivalIndexes[1] });
+                                chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta, 
+                                    rivalIndexes[0], rivalIndexes[1] });
                             }
                         }
                         else
@@ -396,12 +397,23 @@ public class CheckersLogic : MonoBehaviour
             MakeMove(randomTurn).Forget();
     }
 
-    private async UniTaskVoid MakeMove(List<int> turnIndex)
+    private async UniTaskVoid MakeMove(List<int> moveIndex)
     {
-        var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
+        var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
 
-        _audioPlayer.PlayMoveSound().Forget();
-        await _visualizer.Move(turnIndex);
+        if (FigureMovedEvent != null)
+        {
+            var delegates = FigureMovedEvent.GetInvocationList();
+            var tasks = new List<UniTask>();
+
+            foreach (var del in delegates)
+            {
+                var task = ((FigureMoved)del)(moveIndex);
+                tasks.Add(task);
+            }
+
+            await UniTask.WhenAll(tasks);
+        }
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -429,17 +441,28 @@ public class CheckersLogic : MonoBehaviour
         EnumerateMoves();
     }
 
-    private async UniTaskVoid MakeChopMove(List<int> turnIndex)
+    private async UniTaskVoid MakeChopMove(List<int> moveIndex)
     {
         var (i, j, iDelta, jDelta, rivalI, rivalJ) = 
-            (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3], turnIndex[4], turnIndex[5]);
+            (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3], moveIndex[4], moveIndex[5]);
 
         _board[rivalI, rivalJ] = 0;
 
-        _audioPlayer.PlayMoveSound().Forget();
+        FigureChoppedEvent?.Invoke(new List<int> { rivalI, rivalJ });
 
-        _visualizer.Chop(rivalI, rivalJ).Forget();
-        await _visualizer.Move(turnIndex);
+        if (FigureMovedEvent != null)
+        {
+            var delegates = FigureMovedEvent.GetInvocationList();
+            var tasks = new List<UniTask>();
+
+            foreach (var del in delegates)
+            {
+                var task = ((FigureMoved)del)(new List<int> { i, j, iDelta, jDelta });
+                tasks.Add(task);
+            }
+
+            await UniTask.WhenAll(tasks);
+        }
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
