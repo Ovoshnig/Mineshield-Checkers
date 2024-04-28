@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Figure choosing.unity
+    path: Assets/Scenes/FigureChoice.unity
     guid: b25e01d6caef81643984505cb388f55f
   - enabled: 1
     path: Assets/Scenes/Checkers.unity

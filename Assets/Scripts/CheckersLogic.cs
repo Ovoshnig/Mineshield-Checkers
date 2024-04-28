@@ -14,7 +14,10 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private int _gameEndingDuration;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
+    public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration);
+
     public static event FigurePlaced FigurePlacedEvent;
+    public static event GameEnded GameEndedEvent;
 
     private List<int> _inputStartPosition;
 
@@ -66,7 +69,8 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        EnumerateMoves();
+        //EnumerateMoves();
+        Win(1).Forget();
     }
 
     private bool IsCanMove(int i, int j)
@@ -397,7 +401,7 @@ public class CheckersLogic : MonoBehaviour
         var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
 
         _audioPlayer.PlayMoveSound().Forget();
-        await _visualizer.StartMoveFigure(turnIndex);
+        await _visualizer.Move(turnIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -434,8 +438,8 @@ public class CheckersLogic : MonoBehaviour
 
         _audioPlayer.PlayMoveSound().Forget();
 
-        _visualizer.ChopFigure(rivalI, rivalJ);
-        await _visualizer.StartMoveFigure(turnIndex);
+        _visualizer.Chop(rivalI, rivalJ).Forget();
+        await _visualizer.Move(turnIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -471,24 +475,9 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTaskVoid Win(int winnerTurn)
     {
-        _audioPlayer.PlayGameEndingSound(winnerTurn).Forget();
-
-        int startPlaceDelay;
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (_board[i, j] == winnerTurn)
-                {
-                    startPlaceDelay = UnityEngine.Random.Range(0, _gameEndingDuration);
-
-                    _visualizer.PlayFigureAnimation(i, j, startPlaceDelay).Forget();
-                }
-            }
-        }
+        GameEndedEvent?.Invoke(winnerTurn, _gameEndingDuration);
 
         await UniTask.Delay(_gameEndingDuration);
-        SceneManager.LoadScene("Figure choosing");
+        SceneManager.LoadScene(0);
     }
 }

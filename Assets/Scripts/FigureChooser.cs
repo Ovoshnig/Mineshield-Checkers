@@ -92,6 +92,6 @@ public class FigureChooser : MonoBehaviour
         GameObject chosenFigure = _figurePrefabs[_currentIndex];
         CheckersVisualizer._playerFigures[0] = chosenFigure;
 
-        SceneManager.LoadScene("Checkers");
+        SceneManager.LoadScene(1);
     }
 }

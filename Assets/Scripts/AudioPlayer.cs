@@ -16,11 +16,13 @@ public class AudioPlayer : MonoBehaviour
     private void OnEnable()
     {
         CheckersLogic.FigurePlacedEvent += PlayPutSound;
+        CheckersLogic.GameEndedEvent += PlayGameEndingSound;
     }
 
     private void OnDisable()
     {
         CheckersLogic.FigurePlacedEvent -= PlayPutSound;
+        CheckersLogic.GameEndedEvent -= PlayGameEndingSound;
     }
 
     private void Awake()
@@ -48,7 +50,7 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.Play();
     }
 
-    public async UniTaskVoid PlayGameEndingSound(int winnerTurn)
+    public async UniTaskVoid PlayGameEndingSound(int winnerTurn, int gameEndingDuration)
     {
         _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
 

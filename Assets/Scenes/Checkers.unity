@@ -858,7 +858,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _jumpDuration: 1000
+  _jumpDuration: 1
   _jumpHeigh: 2
   _figurePrefabs:
   - {fileID: 195318454865757766, guid: a35157dcadf7bb747b6754db216dce8b, type: 3}

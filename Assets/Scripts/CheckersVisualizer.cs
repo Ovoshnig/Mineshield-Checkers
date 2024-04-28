@@ -29,11 +29,13 @@ public class CheckersVisualizer : MonoBehaviour
     private void OnEnable()
     {
         CheckersLogic.FigurePlacedEvent += PlaceFigure;
+        CheckersLogic.GameEndedEvent += PlayEndingAnimation;
     }
 
     private void OnDisable()
     {
         CheckersLogic.FigurePlacedEvent -= PlaceFigure;
+        CheckersLogic.GameEndedEvent -= PlayEndingAnimation;
     }
 
     private void Awake()
@@ -95,7 +97,7 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(false);
     }
 
-    public async UniTask StartMoveFigure(List<int> turnIndex) 
+    public async UniTask Move(List<int> turnIndex) 
     {
         var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
 
@@ -110,14 +112,6 @@ public class CheckersVisualizer : MonoBehaviour
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
         _figureTransforms[i, j] = null;
-    }
-
-    public void ChopFigure(int rivalI, int rivalJ)
-    {
-        Vector3 rivalPosition = Indexes2Position(rivalI, rivalJ);
-        float distance = Vector3.Distance(_startPosition, rivalPosition);
-        float removeDuration = distance / _moveSpeed;
-        RemoveFigure(_figureTransforms[rivalI, rivalJ], removeDuration).Forget();
     }
 
     public async UniTask MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
@@ -138,11 +132,16 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform.position = endPosition;
     }
 
-    public async UniTaskVoid RemoveFigure(Transform figureTransform, float duration)
+    public async UniTask Chop(int i, int j)
     {
-        await UniTask.Delay((int)(1000 * duration));
+        Vector3 rivalPosition = Indexes2Position(i, j);
+        float distance = Vector3.Distance(_startPosition, rivalPosition);
+        int removeDuration = (int)(1000 * distance / _moveSpeed);
 
-        Destroy(figureTransform.gameObject);
+        await UniTask.Delay(removeDuration);
+
+        Destroy(_figureTransforms[i, j].gameObject);
+        _figureTransforms[i, j] = null;
     }
 
     public void CreateDam()
@@ -157,11 +156,31 @@ public class CheckersVisualizer : MonoBehaviour
         crown.transform.parent = childFigureTransform;
     }
 
-    public async UniTaskVoid PlayFigureAnimation(int i, int j, int startDelay)
+    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, int gameEndingDuration)
     {
-        await UniTask.Delay(startDelay);
+        string winnerName = _playerFigures[winnerTurn].name;
 
-        Transform figureTransform = _figureTransforms[i, j];
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                Transform figureTransform = _figureTransforms[i, j];
+
+                if (figureTransform != null && figureTransform.name == winnerName)
+                {
+                    int startJumpDelay = Random.Range(0, gameEndingDuration);
+                    JumpFigure(figureTransform, startJumpDelay).Forget();
+
+                    await UniTask.Yield();
+                }
+            }
+        }
+    }
+
+    private async UniTask JumpFigure(Transform figureTransform, int startJumpDelay)
+    {
+        await UniTask.Delay(startJumpDelay);
+
         Vector3 figurePosition = figureTransform.position;
 
         float expiredTime = 0f;
