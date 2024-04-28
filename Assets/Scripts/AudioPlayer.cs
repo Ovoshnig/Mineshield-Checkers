@@ -11,8 +11,8 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
 
-    private CheckersLogic _logic;
-    private AudioSource _audioSource;
+    [SerializeField] private CheckersLogic _logic;
+    [SerializeField] private AudioSource _audioSource;
 
     private int _clipIndex;
 
@@ -56,11 +56,11 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_dragClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayChopSound(List<int> chopIndex)
+    private async UniTaskVoid PlayChopSound(List<int> chopIndex, int chopDelay)
     {
         _clipIndex = Random.Range(0, _chopClips.Length);
 
-        await UniTask.Yield();
+        await UniTask.Delay(chopDelay);
 
         _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }

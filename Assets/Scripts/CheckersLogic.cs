@@ -9,12 +9,15 @@ using UnityEngine.SceneManagement;
 public class CheckersLogic : MonoBehaviour
 {
     [SerializeField] private float _placementDelay;
+    [SerializeField] private float _moveSpeed;
     [SerializeField] private float _gameEndingDuration;
+
+    [SerializeField] private PlayerInput _playerInput;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
     public delegate void FigureSelected(List<int> selectIndexes, bool shoodSelect);
     public delegate UniTask FigureMoved(List<int> moveIndex);
-    public delegate UniTaskVoid FigureChopped(List<int> chopIndex);
+    public delegate UniTaskVoid FigureChopped(List<int> chopIndex, int chopDelay);
     public delegate void DamCreated();
     public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration);
 
@@ -27,7 +30,6 @@ public class CheckersLogic : MonoBehaviour
 
     private List<int> _inputStartPosition;
 
-    private PlayerInput _playerInput;
 
     private readonly int[,] _board = new int[8, 8];
     private readonly int[] _figureCounts = { 12, 12 };
@@ -35,6 +37,8 @@ public class CheckersLogic : MonoBehaviour
     private readonly int[] _directions = { -1, 1 };
 
     private int _turn = 1;
+
+    public float MoveSpeed { get => _moveSpeed; }
 
     private void OnValidate() => _playerInput ??= GetComponent<PlayerInput>();
     
@@ -443,7 +447,12 @@ public class CheckersLogic : MonoBehaviour
 
         _board[rivalI, rivalJ] = 0;
 
-        FigureChoppedEvent?.Invoke(moveIndex);
+        Vector3 startPosition = CoordinateTranslator.Indexes2Position(i, j);
+        Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
+        float distance = Vector3.Distance(startPosition, rivalPosition);
+        int chopDelay = (int)(1000 * (distance / _moveSpeed));
+
+        FigureChoppedEvent?.Invoke(moveIndex, chopDelay);
 
         if (FigureMovedEvent != null)
         {

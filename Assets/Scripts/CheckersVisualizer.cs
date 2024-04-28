@@ -5,7 +5,6 @@ using UnityEngine;
 [RequireComponent(typeof(CheckersLogic))]
 public class CheckersVisualizer : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed;
     [SerializeField] private float _figureSize;
 
     [SerializeField] private AnimationCurve _jumpCurve;
@@ -16,14 +15,12 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private GameObject _crownPrefab;
     [SerializeField] private GameObject _selectionCube;
 
-    private CheckersLogic _logic;
+    [SerializeField] private CheckersLogic _logic;
 
     public static readonly GameObject[] _playerFigures = new GameObject[2];
     private readonly Transform[,] _figureTransforms = new Transform[8, 8];
 
     private Transform _figureTransform;
-
-    private const float _cellSize = 2.5f;
 
     private Vector3 _endPosition;
 
@@ -67,24 +64,9 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(false);
     }
 
-    private Vector3 Indexes2Position(int i, int j)
-    {
-        float iFloat = i + 0.5f;
-        float jFloat = j + 0.5f;
-
-        iFloat -= 4f;
-        jFloat -= 4f;
-
-        iFloat *= _cellSize;
-        jFloat *= _cellSize;
-
-        Vector3 position = new(iFloat, 0f, jFloat);
-        return position;
-    }
-
     private async UniTaskVoid PlaceFigure(int i, int j, int index)
     {
-        Vector3 position = Indexes2Position(i, j);
+        Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
         var newFigure = Instantiate(_playerFigures[index], position, Quaternion.Euler(0, 0, 0));
         newFigure.name = _playerFigures[index].name;
         newFigure.transform.localScale *= _figureSize;
@@ -100,7 +82,7 @@ public class CheckersVisualizer : MonoBehaviour
         {
             var (i, j) = (indexes[0], indexes[1]);
 
-            Vector3 position = Indexes2Position(i, j);
+            Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
             _selectionCube.transform.localPosition = position;
         }
         _selectionCube.SetActive(shoodSelect);
@@ -113,9 +95,9 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform = _figureTransforms[i, j];
 
         Vector3 startPosition = _figureTransform.position;
-        _endPosition = Indexes2Position(i + iDelta, j + jDelta);
+        _endPosition = CoordinateTranslator.Indexes2Position(i + iDelta, j + jDelta);
         float distance = Vector3.Distance(startPosition, _endPosition);
-        float moveDuration = distance / _moveSpeed;
+        float moveDuration = distance / _logic.MoveSpeed;
 
         await MoveFigure(startPosition, _endPosition, moveDuration);
 
@@ -141,16 +123,11 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform.position = endPosition;
     }
 
-    private async UniTaskVoid Chop(List<int> moveIndex)
+    private async UniTaskVoid Chop(List<int> moveIndex, int chopDelay)
     {
-        var (i, j, rivalI, rivalJ) = (moveIndex[0], moveIndex[1], moveIndex[4], moveIndex[5]);
+        var (rivalI, rivalJ) = (moveIndex[4], moveIndex[5]);
 
-        Vector3 startPosition = Indexes2Position(i, j);
-        Vector3 rivalPosition = Indexes2Position(rivalI, rivalJ);
-        float distance = Vector3.Distance(startPosition, rivalPosition);
-        int removeDuration = (int)(1000 * (distance / _moveSpeed));
-
-        await UniTask.Delay(removeDuration);
+        await UniTask.Delay(chopDelay);
 
         Destroy(_figureTransforms[rivalI, rivalJ].gameObject);
         _figureTransforms[rivalI, rivalJ] = null;

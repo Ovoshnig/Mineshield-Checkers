@@ -4,28 +4,10 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    private const float _cellSize = 2.5f;
-
     private void Start()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-    }
-
-    private (int i, int j) Position2Indexes(Vector3 position)
-    {
-        var (iFloat, jFloat) = (position[0], position[2]);
-
-        iFloat /= _cellSize;
-        jFloat /= _cellSize;
-
-        iFloat += 4f;
-        jFloat += 4f;
-
-        int i = Mathf.RoundToInt(iFloat - 0.5f);
-        int j = Mathf.RoundToInt(jFloat - 0.5f);
-
-        return (i, j);
     }
 
     public async UniTask GetPlayerInput(List<int> playerIndexes)
@@ -43,7 +25,7 @@ public class PlayerInput : MonoBehaviour
                 {
                     hitPoint = hit.point;
 
-                    var (i, j) = Position2Indexes(hitPoint);
+                    var (i, j) = CoordinateTranslator.Position2Indexes(hitPoint);
                     playerIndexes.Add(i);
                     playerIndexes.Add(j);
                 }

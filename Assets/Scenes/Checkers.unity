@@ -801,7 +801,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a3b173324aa92458cb349242c08588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _placementDelay: 0.1
+  _placementDelay: 0.2
+  _moveSpeed: 8
   _gameEndingDuration: 5
 --- !u!114 &1753311609
 MonoBehaviour:
@@ -815,7 +816,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96ceee1a6594ebb499f19705de6e120d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _moveSpeed: 8
   _figureSize: 0.7
   _jumpCurve:
     serializedVersion: 2
