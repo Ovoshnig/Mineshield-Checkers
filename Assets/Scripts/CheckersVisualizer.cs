@@ -25,7 +25,6 @@ public class CheckersVisualizer : MonoBehaviour
 
     private const float _cellSize = 2.5f;
 
-    private Vector3 _startPosition;
     private Vector3 _endPosition;
 
     private void OnValidate() => _logic ??= FindObjectOfType<CheckersLogic>();
@@ -107,18 +106,18 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(shoodSelect);
     }
 
-    private async UniTask Move(List<int> turnIndex) 
+    private async UniTask Move(List<int> moveIndex) 
     {
-        var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
+        var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
 
         _figureTransform = _figureTransforms[i, j];
 
-        _startPosition = _figureTransform.position;
+        Vector3 startPosition = _figureTransform.position;
         _endPosition = Indexes2Position(i + iDelta, j + jDelta);
-        float distance = Vector3.Distance(_startPosition, _endPosition);
+        float distance = Vector3.Distance(startPosition, _endPosition);
         float moveDuration = distance / _moveSpeed;
 
-        await MoveFigure(_startPosition, _endPosition, moveDuration);
+        await MoveFigure(startPosition, _endPosition, moveDuration);
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
         _figureTransforms[i, j] = null;
@@ -142,17 +141,19 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform.position = endPosition;
     }
 
-    private async UniTaskVoid Chop(List<int> chopIndex)
+    private async UniTaskVoid Chop(List<int> moveIndex)
     {
-        var (i, j) = (chopIndex[0], chopIndex[1]);
-        Vector3 rivalPosition = Indexes2Position(i, j);
-        float distance = Vector3.Distance(_startPosition, rivalPosition);
-        int removeDuration = (int)(1000 * distance / _moveSpeed);
+        var (i, j, rivalI, rivalJ) = (moveIndex[0], moveIndex[1], moveIndex[4], moveIndex[5]);
+
+        Vector3 startPosition = Indexes2Position(i, j);
+        Vector3 rivalPosition = Indexes2Position(rivalI, rivalJ);
+        float distance = Vector3.Distance(startPosition, rivalPosition);
+        int removeDuration = (int)(1000 * (distance / _moveSpeed));
 
         await UniTask.Delay(removeDuration);
 
-        Destroy(_figureTransforms[i, j].gameObject);
-        _figureTransforms[i, j] = null;
+        Destroy(_figureTransforms[rivalI, rivalJ].gameObject);
+        _figureTransforms[rivalI, rivalJ] = null;
     }
 
     private void CreateDam()
@@ -169,7 +170,7 @@ public class CheckersVisualizer : MonoBehaviour
 
     private async UniTaskVoid PlayEndingAnimation(int winnerTurn, int gameEndingDuration)
     {
-        string winnerName = _playerFigures[winnerTurn].name;
+        string winnerName = _playerFigures[winnerTurn - 1].name;
 
         for (int i = 0; i < 8; i++)
         {

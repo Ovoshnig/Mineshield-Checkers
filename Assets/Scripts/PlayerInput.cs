@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
 {
-    private RaycastHit hit;
-
     private const float _cellSize = 2.5f;
 
     private void Start()
@@ -41,7 +39,7 @@ public class PlayerInput : MonoBehaviour
                 Vector3 mousePosition = Input.mousePosition;
                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
-                if (Physics.Raycast(ray, out hit))
+                if (Physics.Raycast(ray, out RaycastHit hit))
                 {
                     hitPoint = hit.point;
 

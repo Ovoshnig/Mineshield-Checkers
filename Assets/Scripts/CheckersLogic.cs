@@ -8,8 +8,8 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(PlayerInput))]
 public class CheckersLogic : MonoBehaviour
 {
-    [SerializeField] private int _placementDelay;
-    [SerializeField] private int _gameEndingDuration;
+    [SerializeField] private float _placementDelay;
+    [SerializeField] private float _gameEndingDuration;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
     public delegate void FigureSelected(List<int> selectIndexes, bool shoodSelect);
@@ -38,11 +38,8 @@ public class CheckersLogic : MonoBehaviour
 
     private void OnValidate() => _playerInput ??= GetComponent<PlayerInput>();
     
-    private void Start()
-    {
-        StartPlacement().Forget();
-    }
-
+    private void Start() => StartPlacement().Forget();
+    
     private async UniTaskVoid StartPlacement()
     {
         for (int i = 0; i < 8; i++)
@@ -61,9 +58,9 @@ public class CheckersLogic : MonoBehaviour
                     {
                         _board[i, j] = delta == 0 ? 1 : 2;
                         FigurePlacedEvent?.Invoke(i, j, playerIndex);
-                    }
 
-                    await UniTask.Delay(_placementDelay);
+                        await UniTask.Delay((int)(1000 * _placementDelay));
+                    }
                 }
             }
         }
@@ -446,7 +443,7 @@ public class CheckersLogic : MonoBehaviour
 
         _board[rivalI, rivalJ] = 0;
 
-        FigureChoppedEvent?.Invoke(new List<int> { rivalI, rivalJ });
+        FigureChoppedEvent?.Invoke(moveIndex);
 
         if (FigureMovedEvent != null)
         {
@@ -455,7 +452,7 @@ public class CheckersLogic : MonoBehaviour
 
             foreach (var del in delegates)
             {
-                var task = ((FigureMoved)del)(new List<int> { i, j, iDelta, jDelta });
+                var task = ((FigureMoved)del)(moveIndex);
                 tasks.Add(task);
             }
 
@@ -496,9 +493,10 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTaskVoid Win(int winnerTurn)
     {
-        GameEndedEvent?.Invoke(winnerTurn, _gameEndingDuration);
+        int duration = (int)(1000 * _gameEndingDuration);
+        GameEndedEvent?.Invoke(winnerTurn, duration);
 
-        await UniTask.Delay(_gameEndingDuration);
+        await UniTask.Delay(duration);
         SceneManager.LoadScene(0);
     }
 }
