@@ -1,4 +1,4 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,7 +8,7 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private float _figureSize;
 
     [SerializeField] private AnimationCurve _jumpCurve;
-    [SerializeField] private float _jumpDuration;
+    [SerializeField] private int _jumpDuration;
     [SerializeField] private float _jumpHeigh;
 
     [SerializeField] private List<GameObject> _figurePrefabs;
@@ -23,8 +23,8 @@ public class CheckersVisualizer : MonoBehaviour
 
     private const float _cellSize = 2.5f;
 
-    private Vector3 startPosition;
-    private Vector3 endPosition;
+    private Vector3 _startPosition;
+    private Vector3 _endPosition;
 
     private void OnEnable()
     {
@@ -69,12 +69,15 @@ public class CheckersVisualizer : MonoBehaviour
         return position;
     }
 
-    public void PlaceFigure(int i, int j, int index)
+    public async UniTaskVoid PlaceFigure(int i, int j, int index)
     {
         Vector3 position = Indexes2Position(i, j);
         var newFigure = Instantiate(_playerFigures[index], position, Quaternion.Euler(0, 0, 0));
         newFigure.name = _playerFigures[index].name;
         newFigure.transform.localScale *= _figureSize;
+
+        await UniTask.Yield();
+
         _figureTransforms[i, j] = newFigure.transform;
     }
 
@@ -92,19 +95,18 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(false);
     }
 
-    public IEnumerator MoveFigure(List<int> turnIndex) 
+    public async UniTask StartMoveFigure(List<int> turnIndex) 
     {
         var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
 
         _figureTransform = _figureTransforms[i, j];
 
-        startPosition = _figureTransform.position;
-        endPosition = Indexes2Position(i + iDelta, j + jDelta);
-        float distance = Vector3.Distance(startPosition, endPosition);
+        _startPosition = _figureTransform.position;
+        _endPosition = Indexes2Position(i + iDelta, j + jDelta);
+        float distance = Vector3.Distance(_startPosition, _endPosition);
         float moveDuration = distance / _moveSpeed;
 
-        StartCoroutine(MoveFigure(startPosition, endPosition, moveDuration));
-        yield return new WaitForSeconds(moveDuration);
+        await MoveFigure(_startPosition, _endPosition, moveDuration);
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
         _figureTransforms[i, j] = null;
@@ -113,12 +115,12 @@ public class CheckersVisualizer : MonoBehaviour
     public void ChopFigure(int rivalI, int rivalJ)
     {
         Vector3 rivalPosition = Indexes2Position(rivalI, rivalJ);
-        float distance = Vector3.Distance(startPosition, rivalPosition);
+        float distance = Vector3.Distance(_startPosition, rivalPosition);
         float removeDuration = distance / _moveSpeed;
-        StartCoroutine(RemoveFigure(_figureTransforms[rivalI, rivalJ], removeDuration));
+        RemoveFigure(_figureTransforms[rivalI, rivalJ], removeDuration).Forget();
     }
 
-    public IEnumerator MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
+    public async UniTask MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
     {
         float elapsedTime = 0f;
         float t;
@@ -130,15 +132,15 @@ public class CheckersVisualizer : MonoBehaviour
 
             elapsedTime += Time.deltaTime;
 
-            yield return null;
+            await UniTask.Yield();
         }
 
         _figureTransform.position = endPosition;
     }
 
-    public IEnumerator RemoveFigure(Transform figureTransform, float dutarion)
+    public async UniTaskVoid RemoveFigure(Transform figureTransform, float duration)
     {
-        yield return new WaitForSeconds(dutarion);
+        await UniTask.Delay((int)(1000 * duration));
 
         Destroy(figureTransform.gameObject);
     }
@@ -155,9 +157,9 @@ public class CheckersVisualizer : MonoBehaviour
         crown.transform.parent = childFigureTransform;
     }
 
-    public IEnumerator PlayFigureAnimation(int i, int j, float startDelay)
+    public async UniTaskVoid PlayFigureAnimation(int i, int j, int startDelay)
     {
-        yield return new WaitForSeconds(startDelay);
+        await UniTask.Delay(startDelay);
 
         Transform figureTransform = _figureTransforms[i, j];
         Vector3 figurePosition = figureTransform.position;
@@ -171,7 +173,7 @@ public class CheckersVisualizer : MonoBehaviour
             figureTransform.position = new Vector3(figurePosition.x, currentY, figurePosition.z);
             expiredTime += Time.deltaTime;
 
-            yield return null;
+            await UniTask.Yield();
         }
         figureTransform.position = figurePosition;
     }

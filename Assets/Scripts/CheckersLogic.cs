@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -10,10 +10,10 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(PlayerInput))]
 public class CheckersLogic : MonoBehaviour
 {
-    [SerializeField] private float _placementDelay;
-    [SerializeField] private float _gameEndingDuration;
+    [SerializeField] private int _placementDelay;
+    [SerializeField] private int _gameEndingDuration;
 
-    public delegate void FigurePlaced(int i, int j, int playerIndex);
+    public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
     public static event FigurePlaced FigurePlacedEvent;
 
     private List<int> _inputStartPosition;
@@ -38,16 +38,14 @@ public class CheckersLogic : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(StartPlacement());
+        StartPlacement().Forget();
     }
 
-    public IEnumerator StartPlacement()
+    private async UniTaskVoid StartPlacement()
     {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 _board[i, j] = 0;
-
-        WaitForSeconds waitPlacementDelay = new(_placementDelay);
 
         foreach (int delta in new int[] { 0, 5 })
         {
@@ -60,16 +58,15 @@ public class CheckersLogic : MonoBehaviour
                     if (i % 2 == j % 2)
                     {
                         _board[i, j] = delta == 0 ? 1 : 2;
-
                         FigurePlacedEvent?.Invoke(i, j, playerIndex);
                     }
 
-                    yield return waitPlacementDelay;
+                    await UniTask.Delay(_placementDelay);
                 }
             }
         }
 
-        StartCoroutine(EnumerateMoves());
+        EnumerateMoves();
     }
 
     private bool IsCanMove(int i, int j)
@@ -98,7 +95,7 @@ public class CheckersLogic : MonoBehaviour
                 _board[i, j] == rivalDam);
     }
 
-    private IEnumerator EnumerateMoves()
+    private void EnumerateMoves()
     {
         int zForwardCoefficient = _turn == 1 ? 1 : -1;
 
@@ -198,41 +195,38 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        yield return null;
-
         // Принятие решения хода
         if (chopIndexes.Count > 0)
         {
             if (_turn == 1)
-                StartCoroutine(WaitPlayerInput(chopIndexes, true));
+                WaitPlayerInput(chopIndexes, true).Forget();
             else
                 SelectRandomMove(chopIndexes, true);
         }
         else if (moveIndexes.Count > 0)
         {
             if (_turn == 1)
-                StartCoroutine(WaitPlayerInput(moveIndexes, false));
+                WaitPlayerInput(moveIndexes, false).Forget();
             else
                 SelectRandomMove(moveIndexes, false);
         }
         else
         {
             int winnerTurn = _turn == 1 ? 2 : 1;
-            StartCoroutine(Win(winnerTurn));
+            Win(winnerTurn).Forget();
         }
     }
 
-    private IEnumerator TryChop(int i, int j)
+    private void TryChop(int i, int j)
     {
         List<List<int>> chopIndexes = new();
 
         if (_board[i, j] == _turn) // Ходит фигура
         {
-            foreach (int iDelta in _directions) // Проверки, есть ли сзади противник, которого можно срубить
+            foreach (int iDelta in _directions) // Проверки, есть ли противник, которого можно срубить
             {
                 foreach (int jDelta in _directions)
                 {
-
                     if (IsCanMove(i + iDelta, j + jDelta) &&
                           IsRival(i + iDelta, j + jDelta) &&
                         IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
@@ -288,15 +282,13 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        yield return null;
-
         // Принятие решения хода
         if (chopIndexes.Count > 0)
         {
             if (_turn == 1)
             {
                 _inputStartPosition = new List<int>() { i, j };
-                StartCoroutine(WaitPlayerContinueInput(chopIndexes));
+                WaitPlayerChopInput(chopIndexes).Forget();
             }
             else
             {
@@ -306,11 +298,11 @@ public class CheckersLogic : MonoBehaviour
         else
         {
             _turn = _turn == 1 ? 2 : 1;
-            StartCoroutine(EnumerateMoves());
+            EnumerateMoves();
         }
     }
 
-    private IEnumerator WaitPlayerInput(List<List<int>> turnIndexes, bool isChoping = false)
+    private async UniTaskVoid WaitPlayerInput(List<List<int>> turnIndexes, bool isChopping = false)
     {
         List<int> inputPosition;
         _inputStartPosition = new();
@@ -321,7 +313,7 @@ public class CheckersLogic : MonoBehaviour
         {
             inputPosition = new();
 
-            yield return StartCoroutine(_playerInput.GetPlayerInput(inputPosition));
+            await _playerInput.GetPlayerInput(inputPosition);
 
             if (turnIndexes.Find(x => x.GetRange(0, 2).SequenceEqual(inputPosition)) != null)
             {
@@ -342,14 +334,14 @@ public class CheckersLogic : MonoBehaviour
 
                 if (finding != null)
                 {
-                    if (isChoping)
-                        StartCoroutine(MakeChopMove(finding));
+                    if (isChopping)
+                        MakeChopMove(finding).Forget();
                     else
-                        StartCoroutine(MakeMove(finding));
+                        MakeMove(finding).Forget();
 
                     _visualizer.RemoveSelection();
 
-                    yield break;
+                    return;
                 }
                 else
                 {
@@ -362,7 +354,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private IEnumerator WaitPlayerContinueInput(List<List<int>> turnIndexes)
+    private async UniTaskVoid WaitPlayerChopInput(List<List<int>> turnIndexes)
     {
         _visualizer.SetSelection(_inputStartPosition);
 
@@ -373,7 +365,7 @@ public class CheckersLogic : MonoBehaviour
         {
             inputEndPosition = new();
 
-            yield return StartCoroutine(_playerInput.GetPlayerInput(inputEndPosition));
+            await _playerInput.GetPlayerInput(inputEndPosition);
 
             var (iStart, jStart) = (_inputStartPosition[0], _inputStartPosition[1]);
             var (iEnd, jEnd) = (inputEndPosition[0], inputEndPosition[1]);
@@ -384,28 +376,28 @@ public class CheckersLogic : MonoBehaviour
             finding = turnIndexes.Find(x => x.GetRange(2, 2).SequenceEqual(playerIndexes));
         }
 
-        StartCoroutine(MakeChopMove(finding));
+        MakeChopMove(finding).Forget();
 
         _visualizer.RemoveSelection();
     }
 
-    private void SelectRandomMove(List<List<int>> turnIndexes, bool isChoping = false)
+    private void SelectRandomMove(List<List<int>> turnIndexes, bool isChopping = false)
     {
         int randomIndex = UnityEngine.Random.Range(0, turnIndexes.Count);
         List<int> randomTurn = turnIndexes[randomIndex];
 
-        if (isChoping)
-            StartCoroutine(MakeChopMove(randomTurn));
+        if (isChopping)
+            MakeChopMove(randomTurn).Forget();
         else
-            StartCoroutine(MakeMove(randomTurn));
+            MakeMove(randomTurn).Forget();
     }
 
-    private IEnumerator MakeMove(List<int> turnIndex)
+    private async UniTaskVoid MakeMove(List<int> turnIndex)
     {
         var (i, j, iDelta, jDelta) = (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3]);
 
-        _audioPlayer.PlayMoveSound();
-        yield return StartCoroutine(_visualizer.MoveFigure(turnIndex));
+        _audioPlayer.PlayMoveSound().Forget();
+        await _visualizer.StartMoveFigure(turnIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -416,7 +408,6 @@ public class CheckersLogic : MonoBehaviour
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
                 _visualizer.CreateDam();
-                yield return null;
             }
             else
             {
@@ -431,21 +422,20 @@ public class CheckersLogic : MonoBehaviour
         _board[i, j] = 0;
 
         _turn = _turn == 1 ? 2 : 1;
-        StartCoroutine(EnumerateMoves());
+        EnumerateMoves();
     }
 
-    private IEnumerator MakeChopMove(List<int> turnIndex)
+    private async UniTaskVoid MakeChopMove(List<int> turnIndex)
     {
         var (i, j, iDelta, jDelta, rivalI, rivalJ) = 
             (turnIndex[0], turnIndex[1], turnIndex[2], turnIndex[3], turnIndex[4], turnIndex[5]);
 
-        var moveFigureRoutine = StartCoroutine(_visualizer.MoveFigure(turnIndex));
-        _audioPlayer.PlayMoveSound();
-
         _board[rivalI, rivalJ] = 0;
-        _visualizer.ChopFigure(rivalI, rivalJ);
 
-        yield return moveFigureRoutine;
+        _audioPlayer.PlayMoveSound().Forget();
+
+        _visualizer.ChopFigure(rivalI, rivalJ);
+        await _visualizer.StartMoveFigure(turnIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -456,7 +446,6 @@ public class CheckersLogic : MonoBehaviour
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
                 _visualizer.CreateDam();
-                yield return null;
             }
             else
             {
@@ -473,23 +462,18 @@ public class CheckersLogic : MonoBehaviour
         int rivalIndex = _turn == 1 ? 1 : 0;
 
         _figureCounts[rivalIndex]--;
-        if (_figureCounts[rivalIndex] == 0)
-        {
-            yield return moveFigureRoutine;
 
-            StartCoroutine(Win(_turn));
-        }
+        if (_figureCounts[rivalIndex] == 0)
+            Win(_turn).Forget();
         else
-        {
-            StartCoroutine(TryChop(i + iDelta, j + jDelta));
-        }
+            TryChop(i + iDelta, j + jDelta);
     }
 
-    private IEnumerator Win(int winnerTurn)
+    private async UniTaskVoid Win(int winnerTurn)
     {
-        _audioPlayer.PlayGameEndingSound(winnerTurn);
+        _audioPlayer.PlayGameEndingSound(winnerTurn).Forget();
 
-        float startDelay;
+        int startPlaceDelay;
 
         for (int i = 0; i < 8; i++)
         {
@@ -497,14 +481,14 @@ public class CheckersLogic : MonoBehaviour
             {
                 if (_board[i, j] == winnerTurn)
                 {
-                    startDelay = UnityEngine.Random.Range(0, _gameEndingDuration);
+                    startPlaceDelay = UnityEngine.Random.Range(0, _gameEndingDuration);
 
-                    StartCoroutine(_visualizer.PlayFigureAnimation(i, j, startDelay));
+                    _visualizer.PlayFigureAnimation(i, j, startPlaceDelay).Forget();
                 }
             }
         }
 
-        yield return new WaitForSeconds(_gameEndingDuration);
+        await UniTask.Delay(_gameEndingDuration);
         SceneManager.LoadScene("Figure choosing");
     }
 }

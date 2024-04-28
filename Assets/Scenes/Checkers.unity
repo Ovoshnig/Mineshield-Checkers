@@ -800,8 +800,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11a3b173324aa92458cb349242c08588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _placementDelay: 0.11
-  _gameEndingDuration: 7
+  _placementDelay: 100
+  _gameEndingDuration: 5000
 --- !u!114 &1753311609
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -858,7 +858,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  _jumpDuration: 0.6
+  _jumpDuration: 1000
   _jumpHeigh: 2
   _figurePrefabs:
   - {fileID: 195318454865757766, guid: a35157dcadf7bb747b6754db216dce8b, type: 3}

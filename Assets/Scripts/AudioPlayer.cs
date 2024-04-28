@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -27,23 +28,32 @@ public class AudioPlayer : MonoBehaviour
         _audioSource = GetComponent<AudioSource>();
     }
 
-    public void PlayPutSound(int i, int j, int index)
+    public async UniTaskVoid PlayPutSound(int i, int j, int index)
     {
         _clipIndex = Random.Range(0, _putClips.Length);
         _audioSource.clip = _putClips[_clipIndex];
+
+        await UniTask.Yield();
+
         _audioSource.Play();
     }
 
-    public void PlayMoveSound()
+    public async UniTaskVoid PlayMoveSound()
     {
         _clipIndex = Random.Range(0, _dragClips.Length);
         _audioSource.clip = _dragClips[_clipIndex];
+
+        await UniTask.Yield();
+
         _audioSource.Play();
     }
 
-    public void PlayGameEndingSound(int winnerTurn)
+    public async UniTaskVoid PlayGameEndingSound(int winnerTurn)
     {
         _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
+
+        await UniTask.Yield();
+
         _audioSource.Play();
     }
 }

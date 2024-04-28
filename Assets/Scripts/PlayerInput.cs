@@ -1,4 +1,4 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,7 +30,7 @@ public class PlayerInput : MonoBehaviour
         return (i, j);
     }
 
-    public IEnumerator GetPlayerInput(List<int> playerIndexes)
+    public async UniTask GetPlayerInput(List<int> playerIndexes)
     {
         Vector3 hitPoint = Vector3.zero;
 
@@ -51,7 +51,7 @@ public class PlayerInput : MonoBehaviour
                 }
             }
 
-            yield return null;
+            await UniTask.Yield();
         }
     }
 }
