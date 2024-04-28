@@ -1,4 +1,4 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -40,6 +40,8 @@ public class FigureChooser : MonoBehaviour
             SwapLeft();
         if (Input.GetKeyDown(KeyCode.RightArrow))
             SwapRight();
+        if (Input.GetKeyDown(KeyCode.Return))
+            MakeAChoice();
     }
 
     public void SwapLeft()
@@ -48,7 +50,7 @@ public class FigureChooser : MonoBehaviour
         {
             _currentIndex--;
 
-            StartCoroutine(Move(1));
+            Move(1).Forget();
             _isMoving = true;
 
             _audioSource.Play();
@@ -61,14 +63,14 @@ public class FigureChooser : MonoBehaviour
         {
             _currentIndex++;
 
-            StartCoroutine(Move(-1));
+            Move(-1).Forget();
             _isMoving = true;
 
             _audioSource.Play();
         }
     }
 
-    private IEnumerator Move(int sign)
+    private async UniTask Move(int sign)
     {
         float expiredTime = 0;
         float startX = transform.position.x;
@@ -80,7 +82,7 @@ public class FigureChooser : MonoBehaviour
             transform.position = new Vector3(currentX, 0, 0);
             expiredTime += Time.deltaTime;
 
-            yield return null;
+            await UniTask.Yield();
         }
         transform.position = new Vector3(-_offset * _currentIndex, 0, 0);
 
