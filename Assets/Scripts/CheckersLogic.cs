@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +20,7 @@ public class CheckersLogic : MonoBehaviour
     public delegate UniTask FigureMoved(List<int> moveIndex);
     public delegate UniTaskVoid FigureChopped(List<int> chopIndex, int chopDelay);
     public delegate void DamCreated();
-    public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration);
+    public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration, CancellationToken token);
 
     public event FigurePlaced FigurePlacedEvent;
     public event FigureSelected FigureSelectedEvent;
@@ -33,15 +34,28 @@ public class CheckersLogic : MonoBehaviour
 
     private readonly int[,] _board = new int[8, 8];
     private readonly int[] _figureCounts = { 12, 12 };
-
     private readonly int[] _directions = { -1, 1 };
-
     private int _turn = 1;
+    private CancellationTokenSource _cts = new();
 
     public float MoveSpeed { get => _moveSpeed; }
 
-    private void OnValidate() => _playerInput ??= GetComponent<PlayerInput>();
-    
+    private void OnValidate()
+    {
+        if (_playerInput == null)
+            _playerInput = GetComponent<PlayerInput>();
+    }
+
+    private void OnDisable()
+    {
+        if (_cts != null)
+        {
+            _cts.Cancel();
+            _cts.Dispose();
+            _cts = null;
+        }
+    }
+
     private void Start() => StartPlacement().Forget();
     
     private async UniTaskVoid StartPlacement()
@@ -503,7 +517,8 @@ public class CheckersLogic : MonoBehaviour
     private async UniTaskVoid Win(int winnerTurn)
     {
         int duration = (int)(1000 * _gameEndingDuration);
-        GameEndedEvent?.Invoke(winnerTurn, duration);
+        var token = _cts.Token;
+        GameEndedEvent?.Invoke(winnerTurn, duration, token);
 
         await UniTask.Delay(duration);
         SceneManager.LoadScene(0);

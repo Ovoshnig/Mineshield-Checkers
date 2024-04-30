@@ -18,10 +18,13 @@ public class FigureChooser : MonoBehaviour
 
     private bool _isMoving = false;
 
-    private void Awake()
+    private void OnValidate()
     {
-        _audioSource = GetComponent<AudioSource>();
-        _audioSource.clip = _swingClip;
+        if (_audioSource == null)
+        {
+            _audioSource = GetComponent<AudioSource>();
+            _audioSource.clip = _swingClip;
+        }
     }
 
     private void Start()

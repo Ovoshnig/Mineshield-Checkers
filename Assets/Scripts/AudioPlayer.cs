@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
@@ -10,7 +11,6 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip[] _chopClips;
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
-
     [SerializeField] private CheckersLogic _logic;
     [SerializeField] private AudioSource _audioSource;
 
@@ -18,8 +18,8 @@ public class AudioPlayer : MonoBehaviour
 
     private void OnValidate()
     {
-        _logic ??= FindObjectOfType<CheckersLogic>();
-        _audioSource ??= GetComponent<AudioSource>();
+        if (_audioSource == null)
+            _audioSource = GetComponent<AudioSource>();
     }
 
     private void OnEnable()
@@ -65,11 +65,11 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayGameEndingSound(int winnerTurn, int gameEndingDuration)
+    private async UniTaskVoid PlayGameEndingSound(int winnerTurn, int gameEndingDuration, CancellationToken token)
     {
         _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
 
-        await UniTask.Yield();
+        await UniTask.Yield(cancellationToken: token);
 
         _audioSource.Play();
     }

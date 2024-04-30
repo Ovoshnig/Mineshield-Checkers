@@ -1,30 +1,24 @@
 using Cysharp.Threading.Tasks;
+using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CheckersLogic))]
 public class CheckersVisualizer : MonoBehaviour
 {
-    [SerializeField] private float _figureSize;
+    public static readonly GameObject[] _playerFigures = new GameObject[2];
 
+    [SerializeField] private float _figureSize;
     [SerializeField] private AnimationCurve _jumpCurve;
     [SerializeField] private int _jumpDuration;
     [SerializeField] private float _jumpHeigh;
-
     [SerializeField] private List<GameObject> _figurePrefabs;
     [SerializeField] private GameObject _crownPrefab;
     [SerializeField] private GameObject _selectionCube;
-
     [SerializeField] private CheckersLogic _logic;
 
-    public static readonly GameObject[] _playerFigures = new GameObject[2];
     private readonly Transform[,] _figureTransforms = new Transform[8, 8];
-
     private Transform _figureTransform;
-
     private Vector3 _endPosition;
-
-    private void OnValidate() => _logic ??= FindObjectOfType<CheckersLogic>();
 
     private void OnEnable()
     {
@@ -145,7 +139,7 @@ public class CheckersVisualizer : MonoBehaviour
         crown.transform.parent = childFigureTransform;
     }
 
-    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, int gameEndingDuration)
+    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, int gameEndingDuration, CancellationToken token)
     {
         string winnerName = _playerFigures[winnerTurn - 1].name;
 
@@ -158,17 +152,17 @@ public class CheckersVisualizer : MonoBehaviour
                 if (figureTransform != null && figureTransform.name == winnerName)
                 {
                     int startJumpDelay = Random.Range(0, gameEndingDuration);
-                    JumpFigure(figureTransform, startJumpDelay).Forget();
+                    JumpFigure(figureTransform, startJumpDelay, token).Forget();
 
-                    await UniTask.Yield();
+                    await UniTask.Yield(cancellationToken: token);
                 }
             }
         }
     }
 
-    private async UniTask JumpFigure(Transform figureTransform, int startJumpDelay)
+    private async UniTask JumpFigure(Transform figureTransform, int startJumpDelay, CancellationToken token)
     {
-        await UniTask.Delay(startJumpDelay);
+        await UniTask.Delay(startJumpDelay, cancellationToken: token);
 
         Vector3 figurePosition = figureTransform.position;
 
@@ -181,7 +175,7 @@ public class CheckersVisualizer : MonoBehaviour
             figureTransform.position = new Vector3(figurePosition.x, currentY, figurePosition.z);
             expiredTime += Time.deltaTime;
 
-            await UniTask.Yield();
+            await UniTask.Yield(cancellationToken: token);
         }
         figureTransform.position = figurePosition;
     }
