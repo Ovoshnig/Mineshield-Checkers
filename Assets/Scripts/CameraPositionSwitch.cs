@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class CameraPositionSwitch : MonoBehaviour
 {
     [SerializeField] private List<Vector3> _positions = new();
     [SerializeField] private List<Quaternion> _rotations = new();
-
     [SerializeField] private int _removeIndex;
 
+    private Vector2 _direction;
     private int _currentIndex;
 
     private void Start()
@@ -16,12 +17,14 @@ public class CameraPositionSwitch : MonoBehaviour
         transform.SetPositionAndRotation(_positions[_currentIndex], _rotations[_currentIndex]);
     }
 
-    private void Update()
+    public void OnSwitchClick(InputAction.CallbackContext context)
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-            GoToPreviousCamera();
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        _direction = context.action.ReadValue<Vector2>();
+
+        if (_direction.x > 0)
             GoToNextCamera();
+        else if (_direction.x < 0)
+            GoToPreviousCamera();
     }
 
     [ContextMenu("Add new point")]

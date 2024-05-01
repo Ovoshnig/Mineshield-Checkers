@@ -6,14 +6,14 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(PlayerInputGetter))]
 public class CheckersLogic : MonoBehaviour
 {
     [SerializeField] private float _placementDelay;
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _gameEndingDuration;
 
-    [SerializeField] private PlayerInput _playerInput;
+    [SerializeField] private PlayerInputGetter _playerInput;
 
     public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
     public delegate void FigureSelected(List<int> selectIndexes, bool shoodSelect);
@@ -21,7 +21,6 @@ public class CheckersLogic : MonoBehaviour
     public delegate UniTaskVoid FigureChopped(List<int> chopIndex, int chopDelay);
     public delegate void DamCreated();
     public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration, CancellationToken token);
-
     public event FigurePlaced FigurePlacedEvent;
     public event FigureSelected FigureSelectedEvent;
     public event FigureMoved FigureMovedEvent;
@@ -30,8 +29,6 @@ public class CheckersLogic : MonoBehaviour
     public event GameEnded GameEndedEvent;
 
     private List<int> _inputStartPosition;
-
-
     private readonly int[,] _board = new int[8, 8];
     private readonly int[] _figureCounts = { 12, 12 };
     private readonly int[] _directions = { -1, 1 };
@@ -43,7 +40,7 @@ public class CheckersLogic : MonoBehaviour
     private void OnValidate()
     {
         if (_playerInput == null)
-            _playerInput = GetComponent<PlayerInput>();
+            _playerInput = GetComponent<PlayerInputGetter>();
     }
 
     private void OnDisable()

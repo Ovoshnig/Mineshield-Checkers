@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(AudioSource))]
@@ -8,14 +9,12 @@ public class FigureChooser : MonoBehaviour
     [SerializeField] private AnimationCurve _movementCurve; 
     [SerializeField] private GameObject[] _figurePrefabs;
     [SerializeField] private AudioClip _swingClip;
-
     [SerializeField] private float _offset;
     [SerializeField] private float _duration;
 
     private AudioSource _audioSource;
-
+    private Vector2 _direction;
     private int _currentIndex = 0;
-
     private bool _isMoving = false;
 
     private void OnValidate()
@@ -37,14 +36,14 @@ public class FigureChooser : MonoBehaviour
         }
     }
 
-    private void Update()
+    public void OnSwapClick(InputAction.CallbackContext context)
     {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
-            SwapLeft();
-        if (Input.GetKeyDown(KeyCode.RightArrow))
+        _direction = context.action.ReadValue<Vector2>();
+
+        if (_direction.x > 0)
             SwapRight();
-        if (Input.GetKeyDown(KeyCode.Return))
-            MakeAChoice();
+        else if (_direction.x < 0)
+            SwapLeft();
     }
 
     public void SwapLeft()
@@ -92,7 +91,7 @@ public class FigureChooser : MonoBehaviour
         _isMoving = false;
     }
 
-    public void MakeAChoice()
+    public void Choose()
     {
         GameObject chosenFigure = _figurePrefabs[_currentIndex];
         CheckersVisualizer._playerFigures[0] = chosenFigure;

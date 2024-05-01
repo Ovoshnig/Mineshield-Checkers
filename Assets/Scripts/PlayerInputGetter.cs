@@ -1,24 +1,31 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class PlayerInput : MonoBehaviour
+public class PlayerInputGetter : MonoBehaviour
 {
+    private bool _isClicked;
+
     private void Start()
     {
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
 
+    public void OnMouseClick() => _isClicked = true;
+    
     public async UniTask GetPlayerInput(List<int> playerIndexes)
     {
         Vector3 hitPoint = Vector3.zero;
 
         while (hitPoint == Vector3.zero)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (_isClicked)
             {
-                Vector3 mousePosition = Input.mousePosition;
+                _isClicked = false;
+
+                Vector3 mousePosition = Mouse.current.position.ReadValue();
                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
                 if (Physics.Raycast(ray, out RaycastHit hit))
