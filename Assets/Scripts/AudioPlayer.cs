@@ -56,16 +56,16 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_dragClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayChopSound(List<int> chopIndex, int chopDelay)
+    private async UniTaskVoid PlayChopSound(List<int> chopIndex, float chopDelay)
     {
         _clipIndex = Random.Range(0, _chopClips.Length);
 
-        await UniTask.Delay(chopDelay);
+        await UniTask.WaitForSeconds(chopDelay);
 
         _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayGameEndingSound(int winnerTurn, int gameEndingDuration, CancellationToken token)
+    private async UniTaskVoid PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
 

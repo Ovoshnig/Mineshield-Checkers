@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent (typeof(ParticleSystem))]
 public class ParticleSpawner : MonoBehaviour
 {
+    [SerializeField] private Color[] _colors;
     [SerializeField] private ParticleSystem _particleSystem;
     [SerializeField] private CheckersLogic _logic;
 
@@ -24,7 +25,7 @@ public class ParticleSpawner : MonoBehaviour
         _logic.GameEndedEvent -= SpawnEndParticles;
     }
 
-    private async UniTaskVoid SpawnEndParticles(int winnerTurn, int gameEndingDuration, CancellationToken token)
+    private async UniTaskVoid SpawnEndParticles(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         _particleSystem.Play();
         await UniTask.Yield(cancellationToken: token);

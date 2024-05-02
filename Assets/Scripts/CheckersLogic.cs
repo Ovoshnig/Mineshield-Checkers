@@ -12,21 +12,14 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private float _placementDelay;
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _gameEndingDuration;
-
     [SerializeField] private PlayerInputGetter _playerInput;
 
-    public delegate UniTaskVoid FigurePlaced(int i, int j, int playerIndex);
-    public delegate void FigureSelected(List<int> selectIndexes, bool shoodSelect);
-    public delegate UniTask FigureMoved(List<int> moveIndex);
-    public delegate UniTaskVoid FigureChopped(List<int> chopIndex, int chopDelay);
-    public delegate void DamCreated();
-    public delegate UniTaskVoid GameEnded(int winnerTurn, int gameEndingDuration, CancellationToken token);
-    public event FigurePlaced FigurePlacedEvent;
-    public event FigureSelected FigureSelectedEvent;
-    public event FigureMoved FigureMovedEvent;
-    public event FigureChopped FigureChoppedEvent;
-    public event DamCreated DamCreatedEvent;
-    public event GameEnded GameEndedEvent;
+    public event Func<int, int, int, UniTaskVoid> FigurePlacedEvent;
+    public event Action<List<int>, bool> FigureSelectedEvent;
+    public event Func<List<int>, UniTask> FigureMovedEvent;
+    public event Func<List<int>, float, UniTaskVoid> FigureChoppedEvent;
+    public event Action DamCreatedEvent;
+    public event Func<int, float, CancellationToken, UniTaskVoid> GameEndedEvent;
 
     private List<int> _inputStartPosition;
     private readonly int[,] _board = new int[8, 8];
@@ -74,7 +67,7 @@ public class CheckersLogic : MonoBehaviour
                         _board[i, j] = delta == 0 ? 1 : 2;
                         FigurePlacedEvent?.Invoke(i, j, playerIndex);
 
-                        await UniTask.Delay((int)(1000 * _placementDelay));
+                        await UniTask.WaitForSeconds(_placementDelay);
                     }
                 }
             }
@@ -407,23 +400,28 @@ public class CheckersLogic : MonoBehaviour
             MakeMove(randomTurn).Forget();
     }
 
-    private async UniTaskVoid MakeMove(List<int> moveIndex)
+    private async UniTask WaitUntilMoved(List<int> moveIndex)
     {
-        var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
-
         if (FigureMovedEvent != null)
         {
             var delegates = FigureMovedEvent.GetInvocationList();
             var tasks = new List<UniTask>();
 
-            foreach (var del in delegates)
+            foreach (var @delegate in delegates)
             {
-                var task = ((FigureMoved)del)(moveIndex);
+                var task = ((Func<List<int>, UniTask>)@delegate)(moveIndex);
                 tasks.Add(task);
             }
 
             await UniTask.WhenAll(tasks);
         }
+    }
+
+    private async UniTaskVoid MakeMove(List<int> moveIndex)
+    {
+        var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
+
+        await WaitUntilMoved(moveIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -461,23 +459,11 @@ public class CheckersLogic : MonoBehaviour
         Vector3 startPosition = CoordinateTranslator.Indexes2Position(i, j);
         Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
         float distance = Vector3.Distance(startPosition, rivalPosition);
-        int chopDelay = (int)(1000 * (distance / _moveSpeed));
+        float chopDelay = (distance / _moveSpeed);
 
         FigureChoppedEvent?.Invoke(moveIndex, chopDelay);
 
-        if (FigureMovedEvent != null)
-        {
-            var delegates = FigureMovedEvent.GetInvocationList();
-            var tasks = new List<UniTask>();
-
-            foreach (var del in delegates)
-            {
-                var task = ((FigureMoved)del)(moveIndex);
-                tasks.Add(task);
-            }
-
-            await UniTask.WhenAll(tasks);
-        }
+        await WaitUntilMoved(moveIndex);
 
         int oppositeBoardSide = _turn == 1 ? 7 : 0;
 
@@ -513,11 +499,10 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTaskVoid Win(int winnerTurn)
     {
-        int duration = (int)(1000 * _gameEndingDuration);
         var token = _cts.Token;
-        GameEndedEvent?.Invoke(winnerTurn, duration, token);
+        GameEndedEvent?.Invoke(winnerTurn, _gameEndingDuration, token);
 
-        await UniTask.Delay(duration);
+        await UniTask.WaitForSeconds(_gameEndingDuration);
         SceneManager.LoadScene(0);
     }
 }

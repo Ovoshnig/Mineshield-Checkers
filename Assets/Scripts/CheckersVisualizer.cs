@@ -9,7 +9,7 @@ public class CheckersVisualizer : MonoBehaviour
 
     [SerializeField] private float _figureSize;
     [SerializeField] private AnimationCurve _jumpCurve;
-    [SerializeField] private int _jumpDuration;
+    [SerializeField] private float _jumpDuration;
     [SerializeField] private float _jumpHeigh;
     [SerializeField] private List<GameObject> _figurePrefabs;
     [SerializeField] private GameObject _crownPrefab;
@@ -117,11 +117,11 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransform.position = endPosition;
     }
 
-    private async UniTaskVoid Chop(List<int> moveIndex, int chopDelay)
+    private async UniTaskVoid Chop(List<int> moveIndex, float chopDelay)
     {
         var (rivalI, rivalJ) = (moveIndex[4], moveIndex[5]);
 
-        await UniTask.Delay(chopDelay);
+        await UniTask.WaitForSeconds(chopDelay);
 
         Destroy(_figureTransforms[rivalI, rivalJ].gameObject);
         _figureTransforms[rivalI, rivalJ] = null;
@@ -139,7 +139,7 @@ public class CheckersVisualizer : MonoBehaviour
         crown.transform.parent = childFigureTransform;
     }
 
-    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, int gameEndingDuration, CancellationToken token)
+    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         string winnerName = _playerFigures[winnerTurn - 1].name;
 
@@ -151,7 +151,7 @@ public class CheckersVisualizer : MonoBehaviour
 
                 if (figureTransform != null && figureTransform.name == winnerName)
                 {
-                    int startJumpDelay = Random.Range(0, gameEndingDuration);
+                    float startJumpDelay = Random.Range(0, gameEndingDuration);
                     JumpFigure(figureTransform, startJumpDelay, token).Forget();
 
                     await UniTask.Yield(cancellationToken: token);
@@ -160,9 +160,9 @@ public class CheckersVisualizer : MonoBehaviour
         }
     }
 
-    private async UniTask JumpFigure(Transform figureTransform, int startJumpDelay, CancellationToken token)
+    private async UniTask JumpFigure(Transform figureTransform, float startJumpDelay, CancellationToken token)
     {
-        await UniTask.Delay(startJumpDelay, cancellationToken: token);
+        await UniTask.WaitForSeconds(startJumpDelay, cancellationToken: token);
 
         Vector3 figurePosition = figureTransform.position;
 
