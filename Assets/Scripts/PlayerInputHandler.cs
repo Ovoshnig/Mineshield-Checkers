@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerInputGetter : MonoBehaviour
+public class PlayerInputHandler : MonoBehaviour
 {
     private bool _isClicked;
 
@@ -32,7 +32,7 @@ public class PlayerInputGetter : MonoBehaviour
                 {
                     hitPoint = hit.point;
 
-                    var (i, j) = CoordinateTranslator.Position2Indexes(hitPoint);
+                    (int i, int j) = CoordinateTranslator.Position2Indexes(hitPoint);
                     playerIndexes.Add(i);
                     playerIndexes.Add(j);
                 }

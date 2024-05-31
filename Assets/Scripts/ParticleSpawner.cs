@@ -15,17 +15,11 @@ public class ParticleSpawner : MonoBehaviour
             _particleSystem = GetComponent<ParticleSystem>();
     }
 
-    private void OnEnable()
-    {
-        _logic.GameEndedEvent += SpawnEndParticles;
-    }
+    private void OnEnable() => _logic.GameEnding += PlayEndParticles;
 
-    private void OnDisable()
-    {
-        _logic.GameEndedEvent -= SpawnEndParticles;
-    }
+    private void OnDisable() => _logic.GameEnding -= PlayEndParticles;
 
-    private async UniTaskVoid SpawnEndParticles(int winnerTurn, float gameEndingDuration, CancellationToken token)
+    private async UniTask PlayEndParticles(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         _particleSystem.Play();
         await UniTask.Yield(cancellationToken: token);

@@ -22,22 +22,22 @@ public class CheckersVisualizer : MonoBehaviour
 
     private void OnEnable()
     {
-        _logic.FigurePlacedEvent += PlaceFigure;
-        _logic.FigureSelectedEvent += ChangeSelection;
-        _logic.FigureMovedEvent += Move;
-        _logic.FigureChoppedEvent += Chop;
-        _logic.DamCreatedEvent += CreateDam;
-        _logic.GameEndedEvent += PlayEndingAnimation;
+        _logic.FigurePlaced += PlaceFigure;
+        _logic.FigureSelected += ChangeSelection;
+        _logic.FigureMoved += Move;
+        _logic.FigureChopped += Chop;
+        _logic.DamCreated += CreateDam;
+        _logic.GameEnding += PlayEndingAnimation;
     }
 
     private void OnDisable()
     {
-        _logic.FigurePlacedEvent -= PlaceFigure;
-        _logic.FigureSelectedEvent -= ChangeSelection;
-        _logic.FigureMovedEvent -= Move;
-        _logic.FigureChoppedEvent -= Chop;
-        _logic.DamCreatedEvent -= CreateDam;
-        _logic.GameEndedEvent -= PlayEndingAnimation;
+        _logic.FigurePlaced -= PlaceFigure;
+        _logic.FigureSelected -= ChangeSelection;
+        _logic.FigureMoved -= Move;
+        _logic.FigureChopped -= Chop;
+        _logic.DamCreated -= CreateDam;
+        _logic.GameEnding -= PlayEndingAnimation;
     }
 
     private void Awake()
@@ -139,9 +139,10 @@ public class CheckersVisualizer : MonoBehaviour
         crown.transform.parent = childFigureTransform;
     }
 
-    private async UniTaskVoid PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)
+    private async UniTask PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         string winnerName = _playerFigures[winnerTurn - 1].name;
+        List<UniTask> tasks = new();
 
         for (int i = 0; i < 8; i++)
         {
@@ -152,12 +153,12 @@ public class CheckersVisualizer : MonoBehaviour
                 if (figureTransform != null && figureTransform.name == winnerName)
                 {
                     float startJumpDelay = Random.Range(0, gameEndingDuration);
-                    JumpFigure(figureTransform, startJumpDelay, token).Forget();
-
-                    await UniTask.Yield(cancellationToken: token);
+                    tasks.Add(JumpFigure(figureTransform, startJumpDelay, token));
                 }
             }
         }
+
+        await UniTask.WhenAll(tasks);
     }
 
     private async UniTask JumpFigure(Transform figureTransform, float startJumpDelay, CancellationToken token)
@@ -177,6 +178,7 @@ public class CheckersVisualizer : MonoBehaviour
 
             await UniTask.Yield(cancellationToken: token);
         }
+
         figureTransform.position = figurePosition;
     }
 }

@@ -24,18 +24,18 @@ public class AudioPlayer : MonoBehaviour
 
     private void OnEnable()
     {
-        _logic.FigurePlacedEvent += PlayPutSound;
-        _logic.FigureMovedEvent += PlayMoveSound;
-        _logic.FigureChoppedEvent += PlayChopSound;
-        _logic.GameEndedEvent += PlayGameEndingSound;
+        _logic.FigurePlaced += PlayPutSound;
+        _logic.FigureMoved += PlayMoveSound;
+        _logic.FigureChopped += PlayChopSound;
+        _logic.GameEnding += PlayGameEndingSound;
     }
 
     private void OnDisable()
     {
-        _logic.FigurePlacedEvent -= PlayPutSound;
-        _logic.FigureMovedEvent -= PlayMoveSound;
-        _logic.FigureChoppedEvent -= PlayChopSound;
-        _logic.GameEndedEvent -= PlayGameEndingSound;
+        _logic.FigurePlaced -= PlayPutSound;
+        _logic.FigureMoved -= PlayMoveSound;
+        _logic.FigureChopped -= PlayChopSound;
+        _logic.GameEnding -= PlayGameEndingSound;
     }
 
     private async UniTaskVoid PlayPutSound(int i, int j, int index)
@@ -65,7 +65,7 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
+    private async UniTask PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
         _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
 
