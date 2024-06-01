@@ -16,11 +16,7 @@ public class AudioPlayer : MonoBehaviour
 
     private int _clipIndex;
 
-    private void OnValidate()
-    {
-        if (_audioSource == null)
-            _audioSource = GetComponent<AudioSource>();
-    }
+    private void Awake() => _audioSource = GetComponent<AudioSource>();
 
     private void OnEnable()
     {

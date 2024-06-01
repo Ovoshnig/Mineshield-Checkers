@@ -30,11 +30,7 @@ public class CheckersLogic : MonoBehaviour
 
     public float MoveSpeed { get => _moveSpeed; }
 
-    private void OnValidate()
-    {
-        if (_playerInput == null)
-            _playerInput = GetComponent<PlayerInputHandler>();
-    }
+    private void Awake() => _playerInput = GetComponent<PlayerInputHandler>();
 
     private void OnDisable()
     {
@@ -73,7 +69,7 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        Win(1).Forget();
+        EnumerateMoves();
     }
 
     private bool IsCanMove(int i, int j)

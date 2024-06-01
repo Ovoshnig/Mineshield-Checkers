@@ -20,6 +20,24 @@ public class CheckersVisualizer : MonoBehaviour
     private Transform _figureTransform;
     private Vector3 _endPosition;
 
+    private void Awake()
+    {
+        int index;
+
+        if (_playerFigures[0] == null)
+        {
+            index = Random.Range(0, _figurePrefabs.Count);
+            _playerFigures[0] = _figurePrefabs[index];
+        }
+
+        _figurePrefabs.Remove(_playerFigures[0]);
+
+        index = Random.Range(0, _figurePrefabs.Count);
+        _playerFigures[1] = _figurePrefabs[index];
+
+        _selectionCube.SetActive(false);
+    }
+
     private void OnEnable()
     {
         _logic.FigurePlaced += PlaceFigure;
@@ -40,33 +58,14 @@ public class CheckersVisualizer : MonoBehaviour
         _logic.GameEnding -= PlayEndingAnimation;
     }
 
-    private void Awake()
-    {
-        int index;
-
-        if (_playerFigures[0] == null)
-        {
-            index = Random.Range(0, _figurePrefabs.Count);
-            _playerFigures[0] = _figurePrefabs[index];
-        }
-
-        _figurePrefabs.Remove(_playerFigures[0]);
-
-        index = Random.Range(0, _figurePrefabs.Count);
-        _playerFigures[1] = _figurePrefabs[index];
-
-        _selectionCube.SetActive(false);
-    }
-
     private async UniTaskVoid PlaceFigure(int i, int j, int index)
     {
         Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
-        var newFigure = Instantiate(_playerFigures[index], position, Quaternion.Euler(0, 0, 0));
+        var task = InstantiateAsync(_playerFigures[index], position, Quaternion.identity);
+        await task;
+        GameObject newFigure = task.Result[0];
         newFigure.name = _playerFigures[index].name;
         newFigure.transform.localScale *= _figureSize;
-
-        await UniTask.Yield();
-
         _figureTransforms[i, j] = newFigure.transform;
     }
 
@@ -74,7 +73,7 @@ public class CheckersVisualizer : MonoBehaviour
     {
         if (shoodSelect)
         {
-            var (i, j) = (indexes[0], indexes[1]);
+            (int i, int j) = (indexes[0], indexes[1]);
 
             Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
             _selectionCube.transform.localPosition = position;
@@ -84,7 +83,7 @@ public class CheckersVisualizer : MonoBehaviour
 
     private async UniTask Move(List<int> moveIndex) 
     {
-        var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
+        (int i, int j, int iDelta, int jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
 
         _figureTransform = _figureTransforms[i, j];
 
@@ -119,7 +118,7 @@ public class CheckersVisualizer : MonoBehaviour
 
     private async UniTaskVoid Chop(List<int> moveIndex, float chopDelay)
     {
-        var (rivalI, rivalJ) = (moveIndex[4], moveIndex[5]);
+        (int rivalI, int rivalJ) = (moveIndex[4], moveIndex[5]);
 
         await UniTask.WaitForSeconds(chopDelay);
 

@@ -6,24 +6,6 @@
             "id": "24f8a988-6af0-4b18-9bd9-488d0b146bc4",
             "actions": [
                 {
-                    "name": "BaseSwap",
-                    "type": "Value",
-                    "id": "30e59a90-e4de-473e-bc30-8e7e7cd33ac9",
-                    "expectedControlType": "Vector2",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                },
-                {
-                    "name": "Choose",
-                    "type": "Button",
-                    "id": "541536b3-0ad5-494c-b5c9-e1f3ce24e06a",
-                    "expectedControlType": "Button",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
                     "name": "ClickOnFigure",
                     "type": "Button",
                     "id": "021b77dd-54a1-4e6f-92f2-07cfeadf7537",
@@ -34,83 +16,6 @@
                 }
             ],
             "bindings": [
-                {
-                    "name": "AD",
-                    "id": "d6435539-5507-4d5b-b39e-d1f6f9697f9c",
-                    "path": "2DVector",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "left",
-                    "id": "2dd69d75-b41e-423e-984a-686690083d64",
-                    "path": "<Keyboard>/a",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "7dedb0cd-6287-49d8-bb9b-b630d0799838",
-                    "path": "<Keyboard>/d",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "Arrows",
-                    "id": "287379b2-71cc-4883-99a1-90d830e788c9",
-                    "path": "2DVector",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": true,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "left",
-                    "id": "c24c826c-c8fd-4591-a7af-348571776d67",
-                    "path": "<Keyboard>/leftArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "right",
-                    "id": "402714ee-329b-4536-8f7b-846e405a9138",
-                    "path": "<Keyboard>/rightArrow",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "BaseSwap",
-                    "isComposite": false,
-                    "isPartOfComposite": true
-                },
-                {
-                    "name": "",
-                    "id": "67f91477-761a-4369-a66c-fbc6fe372fb1",
-                    "path": "<Keyboard>/enter",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Choose",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
                 {
                     "name": "",
                     "id": "0a71690b-6805-4ea0-9dea-68cd3a538c71",
@@ -204,6 +109,96 @@
                     "action": "SwitchCamera",
                     "isComposite": false,
                     "isPartOfComposite": true
+                }
+            ]
+        },
+        {
+            "name": "FigureChoice",
+            "id": "67691465-9bde-4817-98fa-f15dad5c7c1f",
+            "actions": [
+                {
+                    "name": "SwapLeft",
+                    "type": "Button",
+                    "id": "0596663a-28bc-49b3-8128-17ae193e0150",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "SwapRight",
+                    "type": "Button",
+                    "id": "34cb6699-fa6b-43b4-a449-6bc00c46aabc",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Choose",
+                    "type": "Button",
+                    "id": "1fe7530a-ff7e-4cc3-9f43-5a141e0ba6a2",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b1b1c07b-fd80-402c-9261-37d20cf1c048",
+                    "path": "<Keyboard>/enter",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Choose",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3e69c8aa-72c5-45d0-a2dd-0f30de31ed24",
+                    "path": "<Keyboard>/a",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwapLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e4514c10-ce77-4f99-9ff5-130e57b1dd2b",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwapLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8981d49c-bc24-40ab-88e9-0c3efa81b7db",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwapRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5d9bf870-d3ef-4a2c-bed5-d951e4a9545f",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SwapRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }

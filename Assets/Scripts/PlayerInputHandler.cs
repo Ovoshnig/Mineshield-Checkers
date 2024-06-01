@@ -5,16 +5,9 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
-    private bool _isClicked;
+    private PlayerInput _playerInput;
+    private bool _isClicked = false;
 
-    private void Start()
-    {
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-    }
-
-    public void OnMouseClick() => _isClicked = true;
-    
     public async UniTask GetPlayerInput(List<int> playerIndexes)
     {
         Vector3 hitPoint = Vector3.zero;
@@ -23,8 +16,6 @@ public class PlayerInputHandler : MonoBehaviour
         {
             if (_isClicked)
             {
-                _isClicked = false;
-
                 Vector3 mousePosition = Mouse.current.position.ReadValue();
                 Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
@@ -41,4 +32,25 @@ public class PlayerInputHandler : MonoBehaviour
             await UniTask.Yield();
         }
     }
+
+    private void Awake()
+    {
+        _playerInput = new PlayerInput();
+        _playerInput.Player.ClickOnFigure.performed += PerformMouseClick;
+        _playerInput.Player.ClickOnFigure.canceled += CancelMouseClick;
+    }
+
+    private void OnEnable() => _playerInput.Enable();
+
+    private void Start()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
+
+    private void OnDisable() => _playerInput.Disable();
+
+    private void PerformMouseClick(InputAction.CallbackContext context) => _isClicked = true;
+
+    private void CancelMouseClick(InputAction.CallbackContext context) => _isClicked = false;
 }

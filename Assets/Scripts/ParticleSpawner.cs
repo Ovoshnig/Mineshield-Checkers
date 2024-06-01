@@ -9,11 +9,7 @@ public class ParticleSpawner : MonoBehaviour
     [SerializeField] private ParticleSystem _particleSystem;
     [SerializeField] private CheckersLogic _logic;
 
-    private void OnValidate()
-    {
-        if (_particleSystem == null)
-            _particleSystem = GetComponent<ParticleSystem>();
-    }
+    private void Awake() => _particleSystem = GetComponent<ParticleSystem>();
 
     private void OnEnable() => _logic.GameEnding += PlayEndParticles;
 

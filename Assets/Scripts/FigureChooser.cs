@@ -13,18 +13,24 @@ public class FigureChooser : MonoBehaviour
     [SerializeField] private float _duration;
 
     private AudioSource _audioSource;
-    private Vector2 _direction;
+    private PlayerInput _playerInput;
     private int _currentIndex = 0;
     private bool _isMoving = false;
 
-    private void OnValidate()
+    private void Awake()
     {
-        if (_audioSource == null)
-        {
-            _audioSource = GetComponent<AudioSource>();
-            _audioSource.clip = _swingClip;
-        }
+        _audioSource = GetComponent<AudioSource>();
+        _audioSource.clip = _swingClip;
+
+        _playerInput = new PlayerInput();
+        _playerInput.FigureChoice.SwapLeft.performed += SwapLeft;
+        _playerInput.FigureChoice.SwapRight.performed += SwapRight;
+        _playerInput.FigureChoice.Choose.performed += Choose;
     }
+
+    private void OnEnable() => _playerInput.Enable();
+
+    private void OnDisable() => _playerInput.Disable();
 
     private void Start()
     {
@@ -36,36 +42,24 @@ public class FigureChooser : MonoBehaviour
         }
     }
 
-    public void OnSwapClick(InputAction.CallbackContext context)
-    {
-        _direction = context.action.ReadValue<Vector2>();
-
-        if (_direction.x > 0)
-            SwapRight();
-        else if (_direction.x < 0)
-            SwapLeft();
-    }
-
-    public void SwapLeft()
+    private void SwapLeft(InputAction.CallbackContext context)
     {
         if (_currentIndex > 0 && !_isMoving)
         {
             _currentIndex--;
-
-            Move(1).Forget();
+            Move(sign: 1).Forget();
             _isMoving = true;
 
             _audioSource.Play();
         }
     }
 
-    public void SwapRight()
+    private void SwapRight(InputAction.CallbackContext context)
     {
         if (_currentIndex < _figurePrefabs.Length - 1 && !_isMoving)
         {
             _currentIndex++;
-
-            Move(-1).Forget();
+            Move(sign: -1).Forget();
             _isMoving = true;
 
             _audioSource.Play();
@@ -91,7 +85,7 @@ public class FigureChooser : MonoBehaviour
         _isMoving = false;
     }
 
-    public void Choose()
+    private void Choose(InputAction.CallbackContext context)
     {
         GameObject chosenFigure = _figurePrefabs[_currentIndex];
         CheckersVisualizer._playerFigures[0] = chosenFigure;
