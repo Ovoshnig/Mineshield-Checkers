@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 public class CheckersVisualizer : MonoBehaviour
 {
@@ -78,6 +79,7 @@ public class CheckersVisualizer : MonoBehaviour
             Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
             _selectionCube.transform.localPosition = position;
         }
+
         _selectionCube.SetActive(shoodSelect);
     }
 
@@ -92,28 +94,11 @@ public class CheckersVisualizer : MonoBehaviour
         float distance = Vector3.Distance(startPosition, _endPosition);
         float moveDuration = distance / _logic.MoveSpeed;
 
-        await MoveFigure(startPosition, _endPosition, moveDuration);
+        await _figureTransform.DOMove(_endPosition, moveDuration)
+            .AsyncWaitForCompletion();
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
         _figureTransforms[i, j] = null;
-    }
-
-    private async UniTask MoveFigure(Vector3 startPosition, Vector3 endPosition, float moveDuration)
-    {
-        float elapsedTime = 0f;
-        float t;
-
-        while (elapsedTime < moveDuration)
-        {
-            t = elapsedTime / moveDuration;
-            _figureTransform.position = Vector3.Lerp(startPosition, endPosition, t);
-
-            elapsedTime += Time.deltaTime;
-
-            await UniTask.Yield();
-        }
-
-        _figureTransform.position = endPosition;
     }
 
     private async UniTaskVoid Chop(List<int> moveIndex, float chopDelay)
