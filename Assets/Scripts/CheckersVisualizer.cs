@@ -125,9 +125,9 @@ public class CheckersVisualizer : MonoBehaviour
         Renderer renderer = childFigureTransform.GetComponent<Renderer>();
         Bounds bounds = renderer.bounds;
         float positionY = bounds.center.y * 0.6f + bounds.extents.y;
-        Vector3 crownPosition = figurePosition + new Vector3(0, positionY + 20f, 0);
+        Vector3 crownPosition = figurePosition + new Vector3(0, positionY + 15f, 0);
 
-        GameObject crown = Instantiate(_crownPrefab, crownPosition, Quaternion.Euler(-90, 0, 0));
+        GameObject crown = Instantiate(_crownPrefab, crownPosition, Quaternion.Euler(-90f, 0f, 0f));
         Transform crownTransform = crown.transform;
         crownTransform.SetParent(childFigureTransform);
 

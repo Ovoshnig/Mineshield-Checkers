@@ -64,7 +64,7 @@ public class FigureChooser : MonoBehaviour
         _currentIndex += direction;
         float targetPositionX = transform.position.x + direction * -_offset;
         await transform.DOMoveX(targetPositionX, _duration)
-            .SetEase(EaseFactory.StopMotion(120, Ease.InOutSine))
+            .SetEase(Ease.InOutSine)
             .AsyncWaitForCompletion();
 
         _isMoving = false;
