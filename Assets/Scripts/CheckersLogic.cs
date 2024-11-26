@@ -9,11 +9,11 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(PlayerInputHandler))]
 public class CheckersLogic : MonoBehaviour
 {
-    public event Func<int, int, int, UniTaskVoid> FigurePlaced;
+    public event Func<int, int, int, UniTask> FigurePlaced;
     public event Action<List<int>, bool> FigureSelected;
     public event Func<List<int>, UniTask> FigureMoved;
-    public event Func<List<int>, float, UniTaskVoid> FigureChopped;
-    public event Action DamCreated;
+    public event Func<List<int>, float, UniTask> FigureChopped;
+    public event Func<UniTask> DamCreated;
     public event Func<int, float, CancellationToken, UniTask> GameEnding;
 
     [SerializeField] private float _placementDelay;
@@ -410,6 +410,20 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
+    private async UniTask WaitUntilDamCreated()
+    {
+        if (DamCreated != null)
+        {
+            var invocationList = DamCreated.GetInvocationList().Cast<Func<UniTask>>();
+            List<UniTask> tasks = new();
+
+            foreach (var handler in invocationList)
+                tasks.Add(handler.Invoke());
+
+            await UniTask.WhenAll(tasks);
+        }
+    }
+
     private async UniTask MakeMove(List<int> moveIndex)
     {
         var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
@@ -424,7 +438,7 @@ public class CheckersLogic : MonoBehaviour
             {
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
-                DamCreated?.Invoke();
+                await WaitUntilDamCreated();
             }
             else
             {
@@ -466,7 +480,7 @@ public class CheckersLogic : MonoBehaviour
             {
                 _board[i + iDelta, j + jDelta] = _turn + 2;
 
-                DamCreated?.Invoke();
+                await WaitUntilDamCreated();
             }
             else
             {

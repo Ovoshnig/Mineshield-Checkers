@@ -11,6 +11,7 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private float _initialFigureSize;
     [SerializeField] private float _normalFigureSize;
     [SerializeField] private float _appearanceDuration;
+    [SerializeField] private float _crownAppearanceDuration;
     [SerializeField] private float _jumpDuration;
     [SerializeField] private float _jumpPower;
     [SerializeField] private List<GameObject> _figurePrefabs;
@@ -60,7 +61,7 @@ public class CheckersVisualizer : MonoBehaviour
         _logic.GameEnding -= PlayEndingAnimation;
     }
 
-    private async UniTaskVoid PlaceFigure(int i, int j, int index)
+    private async UniTask PlaceFigure(int i, int j, int index)
     {
         Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
 
@@ -107,7 +108,7 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = null;
     }
 
-    private async UniTaskVoid Chop(List<int> moveIndex, float chopDelay)
+    private async UniTask Chop(List<int> moveIndex, float chopDelay)
     {
         (int rivalI, int rivalJ) = (moveIndex[4], moveIndex[5]);
 
@@ -117,16 +118,22 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[rivalI, rivalJ] = null;
     }
 
-    private void CreateDam()
+    private async UniTask CreateDam()
     {
         Transform childFigureTransform = _figureTransform.GetChild(0);
         Vector3 figurePosition = _figureTransform.position;
         Renderer renderer = childFigureTransform.GetComponent<Renderer>();
         Bounds bounds = renderer.bounds;
-        Vector3 crownPosition = figurePosition + new Vector3(0, bounds.center.y * 0.6f + bounds.extents.y, 0);
+        float positionY = bounds.center.y * 0.6f + bounds.extents.y;
+        Vector3 crownPosition = figurePosition + new Vector3(0, positionY + 20f, 0);
 
         GameObject crown = Instantiate(_crownPrefab, crownPosition, Quaternion.Euler(-90, 0, 0));
-        crown.transform.parent = childFigureTransform;
+        Transform crownTransform = crown.transform;
+        crownTransform.SetParent(childFigureTransform);
+
+        await crownTransform.DOMoveY(positionY, _crownAppearanceDuration)
+            .SetEase(Ease.InQuad)
+            .AsyncWaitForCompletion();
     }
 
     private async UniTask PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)

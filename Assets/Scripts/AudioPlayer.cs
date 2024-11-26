@@ -34,7 +34,7 @@ public class AudioPlayer : MonoBehaviour
         _logic.GameEnding -= PlayGameEndingSound;
     }
 
-    private async UniTaskVoid PlayPutSound(int i, int j, int index)
+    private async UniTask PlayPutSound(int i, int j, int index)
     {
         _clipIndex = Random.Range(0, _putClips.Length);
 
@@ -52,7 +52,7 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_dragClips[_clipIndex]);
     }
 
-    private async UniTaskVoid PlayChopSound(List<int> chopIndex, float chopDelay)
+    private async UniTask PlayChopSound(List<int> chopIndex, float chopDelay)
     {
         _clipIndex = Random.Range(0, _chopClips.Length);
 
