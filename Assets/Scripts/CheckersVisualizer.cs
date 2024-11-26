@@ -155,9 +155,9 @@ public class CheckersVisualizer : MonoBehaviour
     {
         await UniTask.WaitForSeconds(startJumpDelay, cancellationToken: token);
 
-        Tween expansion = figureTransform.DOBlendableScaleBy(new Vector3(0.4f, -0.3f, 0.4f), _jumpDuration * 0.6f)
+        Tween expansion = figureTransform.DOBlendableScaleBy(new Vector3(0.4f, -0.3f, 0.4f), _jumpDuration * 0.5f)
             .SetEase(Ease.InOutSine);
-        Tween jump = figureTransform.DOJump(figureTransform.position, _jumpPower, 1, _jumpDuration * 0.4f)
+        Tween jump = figureTransform.DOJump(figureTransform.position, _jumpPower, 1, _jumpDuration * 0.5f)
             .SetEase(Ease.OutQuad);
         Tween compression = figureTransform.DOBlendableScaleBy(new Vector3(-0.4f, 0.3f, -0.4f), _jumpDuration * 0.2f)
             .SetEase(Ease.InOutSine);

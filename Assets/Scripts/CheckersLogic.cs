@@ -32,11 +32,7 @@ public class CheckersLogic : MonoBehaviour
 
     private void Awake() => _playerInput = GetComponent<PlayerInputHandler>();
 
-    private async void Start()
-    {
-        await StartPlacement();
-        Win(1).Forget();
-    }
+    private async void Start() => await StartPlacement();
 
     private void OnDisable()
     {
