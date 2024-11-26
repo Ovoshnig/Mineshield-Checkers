@@ -28,7 +28,7 @@ public class CheckersLogic : MonoBehaviour
     private int _turn = 1;
     private CancellationTokenSource _cts = new();
 
-    public float MoveSpeed { get => _moveSpeed; }
+    public float MoveSpeed => _moveSpeed;
 
     private void Awake() => _playerInput = GetComponent<PlayerInputHandler>();
 

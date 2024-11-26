@@ -102,6 +102,7 @@ public class CheckersVisualizer : MonoBehaviour
         float moveDuration = distance / _logic.MoveSpeed;
 
         await _figureTransform.DOMove(_endPosition, moveDuration)
+            .SetEase(Ease.Linear)
             .AsyncWaitForCompletion();
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
