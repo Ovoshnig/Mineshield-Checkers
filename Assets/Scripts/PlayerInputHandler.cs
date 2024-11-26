@@ -36,8 +36,8 @@ public class PlayerInputHandler : MonoBehaviour
     private void Awake()
     {
         _playerInput = new PlayerInput();
-        _playerInput.Player.ClickOnFigure.performed += PerformMouseClick;
-        _playerInput.Player.ClickOnFigure.canceled += CancelMouseClick;
+        _playerInput.Player.ClickOnFigure.performed += _ => _isClicked = true;
+        _playerInput.Player.ClickOnFigure.canceled += _ => _isClicked = false;
     }
 
     private void OnEnable() => _playerInput.Enable();
@@ -49,8 +49,4 @@ public class PlayerInputHandler : MonoBehaviour
     }
 
     private void OnDisable() => _playerInput.Disable();
-
-    private void PerformMouseClick(InputAction.CallbackContext context) => _isClicked = true;
-
-    private void CancelMouseClick(InputAction.CallbackContext context) => _isClicked = false;
 }

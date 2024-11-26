@@ -5734,6 +5734,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ecc2b95d8aac77d4391820ce0b98036e, type: 3}
   - {fileID: 8300000, guid: 0a2d7b0034fb16e48a9cae755818f96f, type: 3}
   - {fileID: 8300000, guid: 50b7bfe8fc180cb45a0ec849139c262c, type: 3}
+  _damCreatedClip: {fileID: 8300000, guid: f0458dd37e75a61469fe8082f81002b0, type: 3}
   _winClip: {fileID: 8300000, guid: ac402ed5801e8164488f3a373bfbb35d, type: 3}
   _lossClip: {fileID: 8300000, guid: 668c0454740c30b4d8112cb1789f3d93, type: 3}
   _logic: {fileID: 1753311608}
