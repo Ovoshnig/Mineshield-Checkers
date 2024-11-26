@@ -35,7 +35,7 @@ public class CheckersLogic : MonoBehaviour
     private async void Start()
     {
         await StartPlacement();
-        await Win(1);
+        Win(1).Forget();
     }
 
     private void OnDisable()

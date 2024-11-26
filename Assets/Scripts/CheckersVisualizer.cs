@@ -8,7 +8,9 @@ public class CheckersVisualizer : MonoBehaviour
 {
     public static readonly GameObject[] _playerFigures = new GameObject[2];
 
-    [SerializeField] private float _figureSize;
+    [SerializeField] private float _initialFigureSize;
+    [SerializeField] private float _normalFigureSize;
+    [SerializeField] private float _appearanceDuration;
     [SerializeField] private float _jumpDuration;
     [SerializeField] private float _jumpPower;
     [SerializeField] private List<GameObject> _figurePrefabs;
@@ -34,8 +36,6 @@ public class CheckersVisualizer : MonoBehaviour
 
         index = Random.Range(0, _figurePrefabs.Count);
         _playerFigures[1] = _figurePrefabs[index];
-
-        _selectionCube.SetActive(false);
     }
 
     private void OnEnable()
@@ -47,6 +47,8 @@ public class CheckersVisualizer : MonoBehaviour
         _logic.DamCreated += CreateDam;
         _logic.GameEnding += PlayEndingAnimation;
     }
+
+    private void Start() => _selectionCube.SetActive(false);
 
     private void OnDisable()
     {
@@ -61,12 +63,17 @@ public class CheckersVisualizer : MonoBehaviour
     private async UniTaskVoid PlaceFigure(int i, int j, int index)
     {
         Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
-        var task = InstantiateAsync(_playerFigures[index], position, Quaternion.identity);
-        await task;
-        GameObject newFigure = task.Result[0];
-        newFigure.name = _playerFigures[index].name;
-        newFigure.transform.localScale *= _figureSize;
-        _figureTransforms[i, j] = newFigure.transform;
+
+        GameObject figure = Instantiate(_playerFigures[index], position, Quaternion.identity);
+        figure.name = _playerFigures[index].name;
+        Transform figureTransform = figure.transform;
+        _figureTransforms[i, j] = figureTransform;
+
+        Vector3 scale = figureTransform.localScale;
+        figureTransform.localScale = _initialFigureSize * scale;
+
+        await figure.transform.DOScale(_normalFigureSize * scale, _appearanceDuration)
+            .AsyncWaitForCompletion();
     }
 
     private void ChangeSelection(List<int> indexes, bool shoodSelect)

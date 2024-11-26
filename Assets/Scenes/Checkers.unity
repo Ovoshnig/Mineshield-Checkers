@@ -5685,51 +5685,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96ceee1a6594ebb499f19705de6e120d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _figureSize: 0.7
-  _jumpCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 0.2667551
-      value: 0.44351205
-      inSlope: 3.2454777
-      outSlope: 3.2454777
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.0905649
-      outWeight: 0.27998888
-    - serializedVersion: 3
-      time: 0.6313154
-      value: 1.0039012
-      inSlope: 0.021621296
-      outSlope: 0.021621296
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.5560699
-    - serializedVersion: 3
-      time: 1
-      value: 0.0009576678
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  _jumpDuration: 1
-  _jumpHeigh: 2
+  _initialFigureSize: 0.0001
+  _normalFigureSize: 0.8
+  _appearanceDuration: 0.2
+  _jumpDuration: 1.4
+  _jumpPower: 5
   _figurePrefabs:
   - {fileID: 195318454865757766, guid: a35157dcadf7bb747b6754db216dce8b, type: 3}
   - {fileID: 3828933871561972873, guid: 15dba4f8b168eec4a9f8f97d25e801b2, type: 3}
