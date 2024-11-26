@@ -4,13 +4,20 @@ using UnityEngine.InputSystem;
 
 public class CameraPositionSwitch : MonoBehaviour
 {
-    [SerializeField] private List<Vector3> _positions = new();
-    [SerializeField] private List<Quaternion> _rotations = new();
-    [SerializeField] private int _removeIndex;
+    [SerializeField] private Transform _cameraPointsParent;
+    [SerializeField] private List<Transform> _cameraPoints;
+    [SerializeField, Min(0f)] private int _currentIndex = 0;
 
     private PlayerInput _playerInput;
     private Vector2 _direction;
-    private int _currentIndex;
+
+    private void OnValidate()
+    {
+        if (_currentIndex > _cameraPoints.Count - 1)
+            _currentIndex = 0;
+
+        UpdateCameraPoints();
+    }
 
     private void Awake()
     {
@@ -22,53 +29,62 @@ public class CameraPositionSwitch : MonoBehaviour
 
     private void Start()
     {
-        _currentIndex = 0;
-        transform.SetPositionAndRotation(_positions[_currentIndex], _rotations[_currentIndex]);
+        UpdateCameraPoints();
+        MoveToCurrentPoint();
     }
 
     private void OnDisable() => _playerInput.Disable();
 
-    [ContextMenu("Add new point")]
-    private void AddTransform()
+    [ContextMenu("Update camera points")]
+    private void UpdateCameraPoints()
     {
-        _positions.Add(transform.position);
-        _rotations.Add(transform.rotation);
+        _cameraPoints.Clear();
+
+        foreach (Transform point in _cameraPointsParent)
+            _cameraPoints.Add(point);
     }
 
-    [ContextMenu("Remove point")]
-    private void RemoveTransform()
+    [ContextMenu("Go to current point")]
+    private void MoveToCurrentPoint()
     {
-        _positions.RemoveAt(_removeIndex);
-        _rotations.RemoveAt(_removeIndex);
+        Transform pointTransform = _cameraPoints[_currentIndex];
+
+        if (transform.parent != pointTransform)
+        {
+            transform.SetParent(pointTransform);
+            transform.SetPositionAndRotation(pointTransform.position, pointTransform.rotation);
+        }
     }
 
-    private void OnSwitchCameraPerformed(InputAction.CallbackContext context) 
+    [ContextMenu("Go to next point")]
+    private void GoToNextPoint()
     {
-        _direction = context.action.ReadValue<Vector2>();
-
-        if (_direction.x > 0)
-            GoToNextCamera();
-        else if (_direction.x < 0)
-            GoToPreviousCamera();
-    }
-
-    private void GoToPreviousCamera()
-    {
-        if (_currentIndex > 0)
-            _currentIndex--;
-        else
-            _currentIndex = _positions.Count - 1;
-
-        transform.SetPositionAndRotation(_positions[_currentIndex], _rotations[_currentIndex]);
-    }
-
-    private void GoToNextCamera()
-    {
-        if (_currentIndex < _positions.Count - 1)
+        if (_currentIndex < _cameraPoints.Count - 1)
             _currentIndex++;
         else
             _currentIndex = 0;
 
-        transform.SetPositionAndRotation(_positions[_currentIndex], _rotations[_currentIndex]);
+        MoveToCurrentPoint();
+    }
+
+    [ContextMenu("Go to previous point")]
+    private void GoToPreviousPoint()
+    {
+        if (_currentIndex > 0)
+            _currentIndex--;
+        else
+            _currentIndex = _cameraPoints.Count - 1;
+
+        MoveToCurrentPoint();
+    }
+
+    private void OnSwitchCameraPerformed(InputAction.CallbackContext context)
+    {
+        _direction = context.action.ReadValue<Vector2>();
+
+        if (_direction.x > 0)
+            GoToNextPoint();
+        else if (_direction.x < 0)
+            GoToPreviousPoint();
     }
 }
