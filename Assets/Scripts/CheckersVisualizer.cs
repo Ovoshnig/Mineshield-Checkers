@@ -9,9 +9,8 @@ public class CheckersVisualizer : MonoBehaviour
     public static readonly GameObject[] _playerFigures = new GameObject[2];
 
     [SerializeField] private float _figureSize;
-    [SerializeField] private AnimationCurve _jumpCurve;
     [SerializeField] private float _jumpDuration;
-    [SerializeField] private float _jumpHeigh;
+    [SerializeField] private float _jumpPower;
     [SerializeField] private List<GameObject> _figurePrefabs;
     [SerializeField] private GameObject _crownPrefab;
     [SerializeField] private GameObject _selectionCube;
@@ -149,20 +148,19 @@ public class CheckersVisualizer : MonoBehaviour
     {
         await UniTask.WaitForSeconds(startJumpDelay, cancellationToken: token);
 
-        Vector3 figurePosition = figureTransform.position;
+        Tween expansion = figureTransform.DOBlendableScaleBy(new Vector3(0.4f, -0.3f, 0.4f), _jumpDuration * 0.6f)
+            .SetEase(Ease.InOutSine);
+        Tween jump = figureTransform.DOJump(figureTransform.position, _jumpPower, 1, _jumpDuration * 0.4f)
+            .SetEase(Ease.OutQuad);
+        Tween compression = figureTransform.DOBlendableScaleBy(new Vector3(-0.4f, 0.3f, -0.4f), _jumpDuration * 0.2f)
+            .SetEase(Ease.InOutSine);
 
-        float expiredTime = 0f;
+        Sequence jumpSequence = DOTween.Sequence();
 
-        while (expiredTime < _jumpDuration)
-        {
-            float progress = expiredTime / _jumpDuration;
-            float currentY = _jumpHeigh * _jumpCurve.Evaluate(progress);
-            figureTransform.position = new Vector3(figurePosition.x, currentY, figurePosition.z);
-            expiredTime += Time.deltaTime;
-
-            await UniTask.Yield(cancellationToken: token);
-        }
-
-        figureTransform.position = figurePosition;
+        await jumpSequence
+            .Append(expansion)
+            .Append(jump)
+            .Join(compression)
+            .AsyncWaitForCompletion();
     }
 }

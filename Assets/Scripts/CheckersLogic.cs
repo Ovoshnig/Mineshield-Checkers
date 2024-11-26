@@ -32,6 +32,12 @@ public class CheckersLogic : MonoBehaviour
 
     private void Awake() => _playerInput = GetComponent<PlayerInputHandler>();
 
+    private async void Start()
+    {
+        await StartPlacement();
+        await Win(1);
+    }
+
     private void OnDisable()
     {
         if (_cts != null)
@@ -42,9 +48,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private void Start() => StartPlacement().Forget();
-    
-    private async UniTaskVoid StartPlacement()
+    private async UniTask StartPlacement()
     {
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
@@ -306,7 +310,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private async UniTaskVoid WaitPlayerInput(List<List<int>> turnIndexes, bool isChopping = false)
+    private async UniTask WaitPlayerInput(List<List<int>> turnIndexes, bool isChopping = false)
     {
         List<int> inputPosition;
         _inputStartPosition = new();
@@ -358,7 +362,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private async UniTaskVoid WaitPlayerChopInput(List<List<int>> turnIndexes)
+    private async UniTask WaitPlayerChopInput(List<List<int>> turnIndexes)
     {
         FigureSelected?.Invoke(_inputStartPosition, true);
 
@@ -410,7 +414,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private async UniTaskVoid MakeMove(List<int> moveIndex)
+    private async UniTask MakeMove(List<int> moveIndex)
     {
         var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
 
@@ -442,7 +446,7 @@ public class CheckersLogic : MonoBehaviour
         EnumerateMoves();
     }
 
-    private async UniTaskVoid MakeChopMove(List<int> moveIndex)
+    private async UniTask MakeChopMove(List<int> moveIndex)
     {
         var (i, j, iDelta, jDelta, rivalI, rivalJ) = 
             (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3], moveIndex[4], moveIndex[5]);
@@ -490,7 +494,7 @@ public class CheckersLogic : MonoBehaviour
             TryChop(i + iDelta, j + jDelta);
     }
 
-    private async UniTaskVoid Win(int winnerTurn)
+    private async UniTask Win(int winnerTurn)
     {
         var token = _cts.Token;
 
