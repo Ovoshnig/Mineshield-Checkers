@@ -69,7 +69,7 @@ public class CheckersLogic : MonoBehaviour
             }
         }
 
-        EnumerateMoves();
+        EnumerateMoves().Forget();
     }
 
     private bool IsCanMove(int i, int j)
@@ -98,7 +98,7 @@ public class CheckersLogic : MonoBehaviour
                 _board[i, j] == rivalDam);
     }
 
-    private void EnumerateMoves()
+    private async UniTask EnumerateMoves()
     {
         int zForwardCoefficient = _turn == 1 ? 1 : -1;
 
@@ -199,19 +199,25 @@ public class CheckersLogic : MonoBehaviour
         }
 
         // Принятие решения хода
+        List<int> moveIndex;
+
         if (chopIndexes.Count > 0)
         {
             if (_turn == 1)
-                WaitPlayerInput(chopIndexes, true).Forget();
+                moveIndex = await GetPlayerMove(chopIndexes);
             else
-                SelectRandomMove(chopIndexes, true);
+                moveIndex = GetAIMove(chopIndexes);
+
+            MakeChopMove(moveIndex).Forget();
         }
         else if (moveIndexes.Count > 0)
         {
             if (_turn == 1)
-                WaitPlayerInput(moveIndexes, false).Forget();
+                moveIndex = await GetPlayerMove(moveIndexes);
             else
-                SelectRandomMove(moveIndexes, false);
+                moveIndex = GetAIMove(moveIndexes);
+
+            MakeMove(moveIndex).Forget();
         }
         else
         {
@@ -220,7 +226,7 @@ public class CheckersLogic : MonoBehaviour
         }
     }
 
-    private void TryChop(int i, int j)
+    private async UniTask TryChop(int i, int j)
     {
         List<List<int>> chopIndexes = new();
 
@@ -287,26 +293,30 @@ public class CheckersLogic : MonoBehaviour
         }
 
         // Принятие решения хода
+        List<int> moveIndex;
+
         if (chopIndexes.Count > 0)
         {
             if (_turn == 1)
             {
                 _inputStartPosition = new List<int>() { i, j };
-                WaitPlayerChopInput(chopIndexes).Forget();
+                moveIndex = await GetPlayerChopMove(chopIndexes);
             }
             else
             {
-                SelectRandomMove(chopIndexes, true);
+                moveIndex = GetAIMove(chopIndexes);
             }
+
+            MakeChopMove(moveIndex).Forget();
         }
         else
         {
             _turn = _turn == 1 ? 2 : 1;
-            EnumerateMoves();
+            EnumerateMoves().Forget();
         }
     }
 
-    private async UniTask WaitPlayerInput(List<List<int>> turnIndexes, bool isChopping = false)
+    private async UniTask<List<int>> GetPlayerMove(List<List<int>> turnIndexes)
     {
         List<int> inputPosition;
         _inputStartPosition = new();
@@ -336,29 +346,24 @@ public class CheckersLogic : MonoBehaviour
 
                 var finding = turnIndexes.Find(x => x.GetRange(0, 4).SequenceEqual(playerIndexes));
 
-                if (finding != null)
-                {
-                    if (isChopping)
-                        MakeChopMove(finding).Forget();
-                    else
-                        MakeMove(finding).Forget();
-
-                    FigureSelected?.Invoke(_inputStartPosition, false);
-
-                    return;
-                }
-                else
+                if (finding == null)
                 {
                     isStartPositionReceived = false;
                     _inputStartPosition = new();
 
                     FigureSelected?.Invoke(_inputStartPosition, false);
                 }
+                else
+                {
+                    FigureSelected?.Invoke(_inputStartPosition, false);
+
+                    return finding;
+                }
             }
         }
     }
 
-    private async UniTask WaitPlayerChopInput(List<List<int>> turnIndexes)
+    private async UniTask<List<int>> GetPlayerChopMove(List<List<int>> turnIndexes)
     {
         FigureSelected?.Invoke(_inputStartPosition, true);
 
@@ -380,20 +385,17 @@ public class CheckersLogic : MonoBehaviour
             finding = turnIndexes.Find(x => x.GetRange(2, 2).SequenceEqual(playerIndexes));
         }
 
-        MakeChopMove(finding).Forget();
-
         FigureSelected?.Invoke(_inputStartPosition, false);
+
+        return finding;
     }
 
-    private void SelectRandomMove(List<List<int>> turnIndexes, bool isChopping = false)
+    private List<int> GetAIMove(List<List<int>> turnIndexes)
     {
         int randomIndex = UnityEngine.Random.Range(0, turnIndexes.Count);
         List<int> randomTurn = turnIndexes[randomIndex];
 
-        if (isChopping)
-            MakeChopMove(randomTurn).Forget();
-        else
-            MakeMove(randomTurn).Forget();
+        return randomTurn;
     }
 
     private async UniTask WaitUntilMoved(List<int> moveIndex)
@@ -457,7 +459,7 @@ public class CheckersLogic : MonoBehaviour
         _board[i, j] = 0;
 
         _turn = _turn == 1 ? 2 : 1;
-        EnumerateMoves();
+        EnumerateMoves().Forget();
     }
 
     private async UniTask MakeChopMove(List<int> moveIndex)
@@ -505,7 +507,7 @@ public class CheckersLogic : MonoBehaviour
         if (_figureCounts[rivalIndex] == 0)
             Win(_turn).Forget();
         else
-            TryChop(i + iDelta, j + jDelta);
+            TryChop(i + iDelta, j + jDelta).Forget();
     }
 
     private async UniTask Win(int winnerTurn)
