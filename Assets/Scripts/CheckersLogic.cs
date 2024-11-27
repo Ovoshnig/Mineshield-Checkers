@@ -72,32 +72,6 @@ public class CheckersLogic : MonoBehaviour
         EnumerateMoves().Forget();
     }
 
-    private bool IsCanMove(int i, int j)
-    {
-        return (i is > -1 and < 8) && 
-               (j is > -1 and < 8);
-    }
-
-    private bool IsRival(int i, int j)
-    {
-        int rivalFigure;
-        int rivalDam;
-
-        if (_turn == 1)
-        {
-            rivalFigure = 2;
-            rivalDam = 4;
-        }
-        else
-        {
-            rivalFigure = 1;
-            rivalDam = 3;
-        }
-
-        return (_board[i, j] == rivalFigure ||
-                _board[i, j] == rivalDam);
-    }
-
     private async UniTask EnumerateMoves()
     {
         int zForwardCoefficient = _turn == 1 ? 1 : -1;
@@ -115,11 +89,11 @@ public class CheckersLogic : MonoBehaviour
 
                     foreach (int iDelta in _directions) // Проверки всех вариантов ходов вперёд
                     {
-                        if (IsCanMove(i + iDelta, j + jDelta))
+                        if (LogicChecker.IsCanMove(i + iDelta, j + jDelta))
                         {
-                            if (IsRival(i + iDelta, j + jDelta))
+                            if (LogicChecker.IsRival(_board, _turn, i + iDelta, j + jDelta))
                             {
-                                if (IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
+                                if (LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
                                        _board[i + 2 * iDelta, j + 2 * jDelta] == 0)
                                 {
                                     chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
@@ -136,14 +110,12 @@ public class CheckersLogic : MonoBehaviour
 
                     foreach (int iDelta in _directions) // Проверки, есть ли сзади противник, которого можно срубить
                     {
-                        if (IsCanMove(i + iDelta, j + jDelta) &&
-                              IsRival(i + iDelta, j + jDelta))
+                        if (LogicChecker.IsCanMove(i + iDelta, j + jDelta) &&
+                            LogicChecker.IsRival(_board, _turn, i + iDelta, j + jDelta) &&
+                            LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
+                            _board[i + 2 * iDelta, j + 2 * jDelta] == 0)
                         {
-                            if (IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
-                                   _board[i + 2 * iDelta, j + 2 * jDelta] == 0)
-                            {
-                                chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
-                            }
+                            chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
                         }
                     }
                 }
@@ -158,9 +130,9 @@ public class CheckersLogic : MonoBehaviour
                             int moveLength = 1;
                             int rivalCount = 0;
 
-                            while (IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
+                            while (LogicChecker.IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
                             {
-                                if (IsRival(i + moveLength * iDelta, j + moveLength * jDelta))
+                                if (LogicChecker.IsRival(_board, _turn, i + moveLength * iDelta, j + moveLength * jDelta))
                                 {
                                     if (rivalCount == 1)
                                     {
@@ -236,9 +208,9 @@ public class CheckersLogic : MonoBehaviour
             {
                 foreach (int jDelta in _directions)
                 {
-                    if (IsCanMove(i + iDelta, j + jDelta) &&
-                          IsRival(i + iDelta, j + jDelta) &&
-                        IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
+                    if (LogicChecker.IsCanMove(i + iDelta, j + jDelta) &&
+                        LogicChecker.IsRival(_board, _turn, i + iDelta, j + jDelta) &&
+                        LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta) &&
                            _board[i + 2 * iDelta, j + 2 * jDelta] == 0)
                     {
                         chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
@@ -257,9 +229,9 @@ public class CheckersLogic : MonoBehaviour
                     int moveLength = 1;
                     int rivalCount = 0;
 
-                    while (IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
+                    while (LogicChecker.IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
                     {
-                        if (IsRival(i + moveLength * iDelta, j + moveLength * jDelta))
+                        if (LogicChecker.IsRival(_board, _turn, i + moveLength * iDelta, j + moveLength * jDelta))
                         {
                             if (rivalCount == 1)
                             {

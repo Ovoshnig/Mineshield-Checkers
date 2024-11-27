@@ -3,7 +3,6 @@ using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
-using UnityEngine.UIElements;
 
 public class CheckersVisualizer : MonoBehaviour
 {
