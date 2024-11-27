@@ -3,12 +3,14 @@ using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.UIElements;
 
 public class CheckersVisualizer : MonoBehaviour
 {
     [SerializeField] private float _initialFigureSize;
     [SerializeField] private float _normalFigureSize;
     [SerializeField] private float _appearanceDuration;
+    [SerializeField] private float _disappearanceDuration;
     [SerializeField] private float _crownAppearanceDuration;
     [SerializeField] private float _jumpDuration;
     [SerializeField] private float _jumpPower;
@@ -74,7 +76,7 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = figureTransform;
 
         Vector3 scale = figureTransform.localScale;
-        figureTransform.localScale = _initialFigureSize * scale;
+        figureTransform.localScale = _initialFigureSize * Vector3.one;
 
         await figure.transform.DOScale(_normalFigureSize * scale, _appearanceDuration)
             .AsyncWaitForCompletion();
@@ -115,10 +117,13 @@ public class CheckersVisualizer : MonoBehaviour
     private async UniTask Chop(List<int> moveIndex, float chopDelay)
     {
         (int rivalI, int rivalJ) = (moveIndex[4], moveIndex[5]);
+        Transform choppedFigureTransform = _figureTransforms[rivalI, rivalJ];
 
         await UniTask.WaitForSeconds(chopDelay);
+        await choppedFigureTransform.DOScale(_initialFigureSize * Vector3.one, _disappearanceDuration)
+            .AsyncWaitForCompletion();
 
-        Destroy(_figureTransforms[rivalI, rivalJ].gameObject);
+        Destroy(choppedFigureTransform.gameObject);
         _figureTransforms[rivalI, rivalJ] = null;
     }
 

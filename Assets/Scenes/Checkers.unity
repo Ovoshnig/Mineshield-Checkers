@@ -5908,6 +5908,7 @@ MonoBehaviour:
   _initialFigureSize: 0.0001
   _normalFigureSize: 0.8
   _appearanceDuration: 0.2
+  _disappearanceDuration: 0.2
   _crownAppearanceDuration: 0.8
   _jumpDuration: 1.4
   _jumpPower: 5
