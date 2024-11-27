@@ -6,8 +6,6 @@ using DG.Tweening;
 
 public class CheckersVisualizer : MonoBehaviour
 {
-    public static readonly GameObject[] _playerFigures = new GameObject[2];
-
     [SerializeField] private float _initialFigureSize;
     [SerializeField] private float _normalFigureSize;
     [SerializeField] private float _appearanceDuration;
@@ -19,6 +17,7 @@ public class CheckersVisualizer : MonoBehaviour
     [SerializeField] private GameObject _selectionCube;
     [SerializeField] private CheckersLogic _logic;
 
+    private readonly GameObject[] _playerFigures = new GameObject[2];
     private readonly Transform[,] _figureTransforms = new Transform[8, 8];
     private Transform _figureTransform;
     private Vector3 _endPosition;
@@ -27,10 +26,14 @@ public class CheckersVisualizer : MonoBehaviour
     {
         int index;
 
-        if (_playerFigures[0] == null)
+        if (FigureChooser.ChosenFigure == null)
         {
             index = Random.Range(0, _figurePrefabs.Count);
             _playerFigures[0] = _figurePrefabs[index];
+        }
+        else
+        {
+            _playerFigures[0] = FigureChooser.ChosenFigure;
         }
 
         _figurePrefabs.Remove(_playerFigures[0]);

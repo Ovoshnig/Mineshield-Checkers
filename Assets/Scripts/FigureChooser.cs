@@ -17,6 +17,8 @@ public class FigureChooser : MonoBehaviour
     private int _currentIndex;
     private bool _isMoving;
 
+    public static GameObject ChosenFigure { get; private set; } = null;
+
     private void Awake()
     {
         InitializeAudioSource();
@@ -81,7 +83,7 @@ public class FigureChooser : MonoBehaviour
 
     private void OnFigureChosen(GameObject figure)
     {
-        CheckersVisualizer._playerFigures[0] = figure;
+        ChosenFigure = figure;
         SceneManager.LoadScene(1);
     }
 }

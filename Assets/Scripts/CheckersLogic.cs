@@ -9,24 +9,24 @@ using UnityEngine.SceneManagement;
 [RequireComponent(typeof(PlayerInputHandler))]
 public class CheckersLogic : MonoBehaviour
 {
+    [SerializeField] private float _placementDelay;
+    [SerializeField] private float _moveSpeed;
+    [SerializeField] private float _gameEndingDuration;
+    [SerializeField] private PlayerInputHandler _playerInput;
+
+    private readonly int[,] _board = new int[8, 8];
+    private readonly int[] _figureCounts = { 12, 12 };
+    private readonly IReadOnlyList<int> _directions = new int[] { -1, 1 };
+    private List<int> _inputStartPosition;
+    private CancellationTokenSource _cts = new();
+    private int _turn = 1;
+
     public event Func<int, int, int, UniTask> FigurePlaced;
     public event Action<List<int>, bool> FigureSelected;
     public event Func<List<int>, UniTask> FigureMoved;
     public event Func<List<int>, float, UniTask> FigureChopped;
     public event Func<UniTask> DamCreated;
     public event Func<int, float, CancellationToken, UniTask> GameEnding;
-
-    [SerializeField] private float _placementDelay;
-    [SerializeField] private float _moveSpeed;
-    [SerializeField] private float _gameEndingDuration;
-    [SerializeField] private PlayerInputHandler _playerInput;
-
-    private List<int> _inputStartPosition;
-    private readonly int[,] _board = new int[8, 8];
-    private readonly int[] _figureCounts = { 12, 12 };
-    private readonly int[] _directions = { -1, 1 };
-    private int _turn = 1;
-    private CancellationTokenSource _cts = new();
 
     public float MoveSpeed => _moveSpeed;
 
