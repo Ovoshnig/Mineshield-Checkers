@@ -400,7 +400,9 @@ public class CheckersLogic : MonoBehaviour
     {
         if (FigureMoved != null)
         {
-            var invocationList = FigureMoved.GetInvocationList().Cast<Func<List<int>, UniTask>>();
+            IEnumerable<Func<List<int>, UniTask>> invocationList = FigureMoved
+                .GetInvocationList()
+                .Cast<Func<List<int>, UniTask>>();
             List<UniTask> tasks = new();
 
             foreach (var handler in invocationList)
@@ -414,7 +416,9 @@ public class CheckersLogic : MonoBehaviour
     {
         if (DamCreated != null)
         {
-            var invocationList = DamCreated.GetInvocationList().Cast<Func<UniTask>>();
+            IEnumerable<Func<UniTask>> invocationList = DamCreated
+                .GetInvocationList()
+                .Cast<Func<UniTask>>();
             List<UniTask> tasks = new();
 
             foreach (var handler in invocationList)
