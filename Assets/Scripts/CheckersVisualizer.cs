@@ -113,9 +113,14 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[i, j] = null;
     }
 
-    private async UniTask Chop(List<int> moveIndex, float chopDelay)
+    private async UniTask Chop(List<int> move)
     {
-        (int rivalI, int rivalJ) = (moveIndex[4], moveIndex[5]);
+        var (i, j, rivalI, rivalJ) = (move[0], move[1], move[4], move[5]);
+
+        Vector3 startPosition = CoordinateTranslator.Indexes2Position(i, j);
+        Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
+        float distance = Vector3.Distance(startPosition, rivalPosition);
+        float chopDelay = (distance / _logic.MoveSpeed);
         Transform choppedFigureTransform = _figureTransforms[rivalI, rivalJ];
 
         await UniTask.WaitForSeconds(chopDelay);

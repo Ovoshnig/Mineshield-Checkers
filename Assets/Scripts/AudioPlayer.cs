@@ -53,8 +53,15 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_dragClips[_clipIndex]);
     }
 
-    private async UniTask PlayChopSound(List<int> chopIndex, float chopDelay)
+    private async UniTask PlayChopSound(List<int> move)
     {
+        var (i, j, rivalI, rivalJ) = (move[0], move[1], move[4], move[5]);
+
+        Vector3 startPosition = CoordinateTranslator.Indexes2Position(i, j);
+        Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
+        float distance = Vector3.Distance(startPosition, rivalPosition);
+        float chopDelay = (distance / _logic.MoveSpeed);
+
         _clipIndex = Random.Range(0, _chopClips.Length);
         await UniTask.WaitForSeconds(chopDelay);
 

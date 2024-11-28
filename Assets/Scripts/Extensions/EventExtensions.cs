@@ -9,8 +9,8 @@ public static class EventExtensions
         if (eventDelegate == null) 
             return;
 
-        var invocationList = eventDelegate.GetInvocationList();
-        var tasks = new List<UniTask>();
+        Delegate[] invocationList = eventDelegate.GetInvocationList();
+        List<UniTask> tasks = new();
 
         foreach (var handler in invocationList)
         {
