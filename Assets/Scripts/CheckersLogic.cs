@@ -407,41 +407,9 @@ public class CheckersLogic : MonoBehaviour
         return randomTurn;
     }
 
-    private async UniTask WaitUntilMoved(List<int> moveIndex)
-    {
-        if (FigureMoved != null)
-        {
-            IEnumerable<Func<List<int>, UniTask>> invocationList = FigureMoved
-                .GetInvocationList()
-                .Cast<Func<List<int>, UniTask>>();
-            List<UniTask> tasks = new();
-
-            foreach (var handler in invocationList)
-                tasks.Add(handler.Invoke(moveIndex));
-
-            await UniTask.WhenAll(tasks);
-        }
-    }
-
-    private async UniTask WaitUntilDamCreated()
-    {
-        if (DamCreated != null)
-        {
-            IEnumerable<Func<UniTask>> invocationList = DamCreated
-                .GetInvocationList()
-                .Cast<Func<UniTask>>();
-            List<UniTask> tasks = new();
-
-            foreach (var handler in invocationList)
-                tasks.Add(handler.Invoke());
-
-            await UniTask.WhenAll(tasks);
-        }
-    }
-
     private async UniTask MakeMove(List<int> moveIndex)
     {
-        await WaitUntilMoved(moveIndex);
+        await FigureMoved.InvokeAndWaitAsync(moveIndex);
 
         var (i, j, iDelta, jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
         int oppositeBoardSide = _turn % 2 == 0 ? 7 : 0;
@@ -451,7 +419,7 @@ public class CheckersLogic : MonoBehaviour
             if (j + jDelta == oppositeBoardSide)
             {
                 _board[i + iDelta, j + jDelta] = _turn % 2 + 2;
-                await WaitUntilDamCreated();
+                await DamCreated.InvokeAndWaitAsync();
             }
             else
             {
@@ -479,8 +447,7 @@ public class CheckersLogic : MonoBehaviour
         float chopDelay = (distance / _moveSpeed);
 
         FigureChopped?.Invoke(moveIndex, chopDelay);
-
-        await WaitUntilMoved(moveIndex);
+        await FigureMoved.InvokeAndWaitAsync(moveIndex);
 
         int oppositeBoardSide = _turn % 2 == 0 ? 7 : 0;
 
@@ -489,7 +456,7 @@ public class CheckersLogic : MonoBehaviour
             if (j + jDelta == oppositeBoardSide)
             {
                 _board[i + iDelta, j + jDelta] = _turn % 2 + 2;
-                await WaitUntilDamCreated();
+                await DamCreated.InvokeAndWaitAsync();
             }
             else
             {
@@ -509,18 +476,8 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTask Win(int winnerTurn)
     {
-        var token = _cts.Token;
-
-        if (GameEnding != null)
-        {
-            var invocationList = GameEnding.GetInvocationList().Cast<Func<int, float, CancellationToken, UniTask>>();
-            List<UniTask> tasks = new();
-
-            foreach (var handler in invocationList)
-                tasks.Add(handler.Invoke(winnerTurn, _gameEndingDuration, token));
-
-            await UniTask.WhenAll(tasks);
-        }
+        CancellationToken token = _cts.Token;
+        await GameEnding.InvokeAndWaitAsync(winnerTurn, _gameEndingDuration, token);
 
         SceneManager.LoadScene(0);
     }
