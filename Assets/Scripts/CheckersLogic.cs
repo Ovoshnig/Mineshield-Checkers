@@ -151,15 +151,13 @@ public class CheckersLogic : MonoBehaviour
         chopIndexes = new List<List<int>>();
         moveIndexes = new List<List<int>>();
 
-        int zForwardCoefficient = _turn % 2 == 0 ? 1 : -1;
-
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
                 if (_board[i, j] == _turn % 2) // Фигура текущего игрока
                 {
-                    int jDelta = zForwardCoefficient;
+                    int jDelta = _turn % 2 == 0 ? 1 : -1;
 
                     foreach (int iDelta in _directions) // Проверки всех вариантов ходов вперёд
                     {
