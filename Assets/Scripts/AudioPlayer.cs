@@ -70,7 +70,7 @@ public class AudioPlayer : MonoBehaviour
 
     private async UniTask PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
-        _audioSource.clip = winnerTurn == 1 ? _winClip : _lossClip;
+        _audioSource.clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
         await UniTask.Yield(cancellationToken: token);
 
         _audioSource.Play();

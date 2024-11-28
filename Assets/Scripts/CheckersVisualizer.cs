@@ -146,7 +146,7 @@ public class CheckersVisualizer : MonoBehaviour
 
     private async UniTask PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
-        string winnerName = _playerFigures[winnerTurn - 1].name;
+        string winnerName = _playerFigures[winnerTurn % 2].name;
         List<UniTask> tasks = new();
 
         for (int i = 0; i < 8; i++)
