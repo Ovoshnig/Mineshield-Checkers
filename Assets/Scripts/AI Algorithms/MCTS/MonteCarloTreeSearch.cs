@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using System.Threading;
 
-public class MonteCarloTreeSearch
+public class MonteCarloTreeSearch : IBotAlgorithm
 {
     private const int MaxIterations = 1000;
 
@@ -11,20 +13,29 @@ public class MonteCarloTreeSearch
         _checkersLogic = checkersLogic;
     }
 
-    public List<int> FindBestMove(int[,] board, List<List<int>> possibleMoves, int player)
+    public async UniTask<List<int>> GetMoveAsync(int[,] board, int turn, CheckersLogic logic, CancellationToken cancellationToken)
     {
-        MCTNode root = new(board, player);
+        MCTNode root = new MCTNode(board, turn);
+
+        List<List<int>> chopIndexes, moveIndexes;
+        logic.EnumerateMoves(board, turn, out chopIndexes, out moveIndexes);
+        var possibleMoves = chopIndexes.Count > 0 ? chopIndexes : moveIndexes;
 
         foreach (var move in possibleMoves)
         {
-            root.AddChild(new MCTNode(board, player, move, _checkersLogic));
+            root.AddChild(new MCTNode(board, turn, move, logic));
         }
 
         for (int i = 0; i < MaxIterations; i++)
         {
+            if (cancellationToken.IsCancellationRequested) break;
+
             MCTNode selectedNode = Select(root);
-            int simulationResult = Simulate(selectedNode);
+            int simulationResult = await SimulateAsync(selectedNode, cancellationToken);
             Backpropagate(selectedNode, simulationResult);
+
+            // Периодическая уступка потока другим задачам
+            if (i % 100 == 0) await UniTask.Yield(cancellationToken);
         }
 
         return root.GetBestChild().Move;
@@ -39,14 +50,16 @@ public class MonteCarloTreeSearch
         return node;
     }
 
-    private int Simulate(MCTNode node)
+    private async UniTask<int> SimulateAsync(MCTNode node, CancellationToken cancellationToken)
     {
         int[,] simulatedBoard = (int[,])node.Board.Clone();
         int currentPlayer = node.Player;
         var figureCounts = (int[])_checkersLogic.FigureCounts.Clone();
 
-        for (int depth = 0; depth < 20; depth++) // Ограничение по глубине
+        for (int depth = 0; depth < 20; depth++)
         {
+            if (cancellationToken.IsCancellationRequested) return -1;
+
             List<List<int>> chopIndexes, moveIndexes;
             _checkersLogic.EnumerateMoves(simulatedBoard, currentPlayer, out chopIndexes, out moveIndexes);
 
@@ -59,7 +72,7 @@ public class MonteCarloTreeSearch
 
             _checkersLogic.SimulateMove(simulatedBoard, figureCounts, randomMove, chopIndexes.Count > 0);
 
-            // Если была рубка, проверяем, можно ли рубить дальше
+            // Если была рубка, проверяем возможность дальнейших рубок
             if (chopIndexes.Count > 0)
             {
                 var (i, j) = (randomMove[0] + randomMove[2], randomMove[1] + randomMove[3]);
@@ -67,6 +80,8 @@ public class MonteCarloTreeSearch
 
                 while (additionalChops.Count > 0)
                 {
+                    if (cancellationToken.IsCancellationRequested) return -1;
+
                     randomMove = additionalChops[UnityEngine.Random.Range(0, additionalChops.Count)];
                     _checkersLogic.SimulateMove(simulatedBoard, figureCounts, randomMove, true);
 
@@ -78,10 +93,13 @@ public class MonteCarloTreeSearch
             {
                 currentPlayer = 1 - currentPlayer; // Меняем ход, если нет цепочки рубок
             }
+
+            // Периодически уступаем поток
+            if (depth % 5 == 0) await UniTask.Yield(cancellationToken);
         }
+
         return -1; // Ничья
     }
-
 
     private void Backpropagate(MCTNode node, int result)
     {

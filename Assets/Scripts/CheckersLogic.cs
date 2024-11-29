@@ -12,11 +12,13 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private float _placementDelay;
     [SerializeField] private float _moveSpeed;
     [SerializeField] private float _gameEndingDuration;
+    [SerializeField] private string _botAlgorithmType = "Minimax";
     [SerializeField] private PlayerInputHandler _playerInput;
 
     private readonly int[,] _board = new int[8, 8];
     private readonly int[] _figureCounts = { 12, 12 };
     private readonly IReadOnlyList<int> _directions = new int[] { -1, 1 };
+    private IBotAlgorithm _botAlgorithm;
     private CancellationTokenSource _cts = new();
     private int _turn = 0;
         
@@ -32,7 +34,17 @@ public class CheckersLogic : MonoBehaviour
 
     private int RivalIndex => _turn % 2 == 0 ? 1 : 0;
 
-    private void Awake() => _playerInput = GetComponent<PlayerInputHandler>();
+    private void Awake()
+    {
+        _playerInput = GetComponent<PlayerInputHandler>();
+
+        _botAlgorithm = _botAlgorithmType switch
+        {
+            "Minimax" => new MinimaxBot(),
+            "MCTS" => new MonteCarloTreeSearch(this),
+            _ => throw new InvalidOperationException("Unknown bot algorithm type")
+        };
+    }
 
     private async void Start()
     {
@@ -98,7 +110,7 @@ public class CheckersLogic : MonoBehaviour
             if (_turn % 2 == 0)
                 moveIndex = await GetPlayerMove(indexes);
             else
-                moveIndex = GetAIMove(indexes);
+                moveIndex = await GetAIMove(indexes);
 
             if (chopIndexes.Count > 0)
             {
@@ -120,13 +132,9 @@ public class CheckersLogic : MonoBehaviour
                         if (chopIndexes.Count > 0)
                         {
                             if (_turn % 2 == 0)
-                            {
                                 moveIndex = await GetPlayerChopMove(chopIndexes);
-                            }
                             else
-                            {
-                                moveIndex = GetAIMove(chopIndexes);
-                            }
+                                moveIndex = await GetAIMove(chopIndexes);
                         }
                         else
                         {
@@ -401,10 +409,11 @@ public class CheckersLogic : MonoBehaviour
         return finding;
     }
 
-    private List<int> GetAIMove(List<List<int>> turnIndexes)
+    private async UniTask<List<int>> GetAIMove(List<List<int>> turnIndexes)
     {
-        MonteCarloTreeSearch mcts = new(this);
-        return mcts.FindBestMove(_board, turnIndexes, _turn % 2);
+        using CancellationTokenSource cts = new();
+
+        return await _botAlgorithm.GetMoveAsync(_board, _turn % 2, this, cts.Token);
     }
 
     private void UpdateBoardAfterMove(int[,] board, int i, int j, int iDelta, int jDelta, int oppositeBoardSide, bool isDam)
