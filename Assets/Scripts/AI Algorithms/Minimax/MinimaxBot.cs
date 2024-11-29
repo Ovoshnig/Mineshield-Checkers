@@ -54,26 +54,22 @@ public class MinimaxBot : IBotAlgorithm
 
         foreach (var move in possibleMoves)
         {
-            if (cancellationToken.IsCancellationRequested) return 0;
+            if (cancellationToken.IsCancellationRequested) 
+                return 0;
 
-            // Копируем доску и количество фигур
             int[,] simulatedBoard = (int[,])board.Clone();
             var simulatedFigureCounts = (int[])figureCounts.Clone();
 
-            // Выполняем симуляцию хода
             logic.SimulateMove(simulatedBoard, simulatedFigureCounts, move, chopIndexes.Count > 0);
 
-            // Если это не цепочка рубок, увеличиваем номер хода
             int nextTurn = turn;
 
             if (chopIndexes.Count == 0)
                 nextTurn++;
 
-            // Рекурсивно вызываем Минимакс
             int value = await MinimaxAsync(simulatedBoard, simulatedFigureCounts, depth - 1,
                 !isMaximizing, nextTurn, logic, cancellationToken);
 
-            // Обновляем лучшую оценку
             if (isMaximizing)
                 bestValue = Math.Max(bestValue, value);
             else
@@ -82,7 +78,6 @@ public class MinimaxBot : IBotAlgorithm
 
         return bestValue;
     }
-
 
     private int EvaluateBoard(int[,] board, int[] figureCounts, int playerIndex)
     {

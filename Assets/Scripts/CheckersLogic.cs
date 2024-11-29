@@ -384,7 +384,7 @@ public class CheckersLogic : MonoBehaviour
     private async UniTask<List<int>> GetPlayerChopMove(List<List<int>> turnIndexes)
     {
         List<int> inputEndPosition = new();
-        List<int> inputStartPosition = turnIndexes[0].GetRange(0, 2); // »спользуем начальную позицию из текущего хода
+        List<int> inputStartPosition = turnIndexes[0].GetRange(0, 2);
         FigureSelected?.Invoke(inputStartPosition, true);
 
         List<int> finding = null;

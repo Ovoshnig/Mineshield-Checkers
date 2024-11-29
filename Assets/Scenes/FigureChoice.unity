@@ -369,7 +369,7 @@ Transform:
   m_GameObject: {fileID: 432371334}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1039.1975, y: 543.2782, z: 895.2262}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -577,18 +577,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _figurePrefabs:
-  - {fileID: 195318454865757766, guid: a35157dcadf7bb747b6754db216dce8b, type: 3}
-  - {fileID: 3828933871561972873, guid: 15dba4f8b168eec4a9f8f97d25e801b2, type: 3}
-  - {fileID: 7013034886063745135, guid: 0aef99d7991cfc242a645176108ea225, type: 3}
-  - {fileID: 2266247857191147268, guid: 6746f3a794b31944aa8a11711c591244, type: 3}
-  - {fileID: 4673349616266480498, guid: 45f86ac888fa85741877bf439dce5a29, type: 3}
-  - {fileID: 387471167745975919, guid: c364692a4a2b9684b9a2421466f961cd, type: 3}
-  - {fileID: 6476149443796782669, guid: 277cda2b90f11614ca8074e676856b3e, type: 3}
-  - {fileID: 2793234789048198423, guid: e72bb6407c3cf4f4ab7ffa57ce8fa20f, type: 3}
-  - {fileID: 4312434250808832216, guid: 430d470ae511327439ae1be6a1fa8fc5, type: 3}
-  - {fileID: 8630379840525285186, guid: cf39d7b6fc6677544a3397513ea743f3, type: 3}
+  - {fileID: 919132149155446097, guid: 4cf65c48233d0a640ab922ee668f9b6f, type: 3}
+  - {fileID: 919132149155446097, guid: ad4e50e75a2a9034fae84342c19b8d92, type: 3}
+  - {fileID: 919132149155446097, guid: a01f48cd2b5708c4fa95d8a9d3f876f9, type: 3}
+  - {fileID: 919132149155446097, guid: 75510948e3809b44c86036e5ac7f23a9, type: 3}
+  - {fileID: 919132149155446097, guid: 636f5fe9423f60b4c91aaeb0dce34530, type: 3}
+  - {fileID: 919132149155446097, guid: b3ba2e775b2391742a58a9dfc1f54060, type: 3}
+  - {fileID: 919132149155446097, guid: fda2a393fbfe0e847965bd10b28b9c4b, type: 3}
+  - {fileID: 919132149155446097, guid: ecc545828e1a20448a98462363e9ab66, type: 3}
+  - {fileID: 919132149155446097, guid: 2ec2d90afaacfdb45bf5e0866210595d, type: 3}
+  - {fileID: 919132149155446097, guid: e851fe529729b5446a93067626542b79, type: 3}
+  - {fileID: 919132149155446097, guid: e40a9af7613a4a94489d63ee7b5fcc19, type: 3}
   _swingClip: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
-  _offset: 7
+  _offset: 5
   _duration: 0.6
 --- !u!4 &855652054
 Transform:
@@ -892,7 +893,7 @@ Transform:
   m_GameObject: {fileID: 1684691488}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1039.1975, y: -542.2782, z: -905.2262}
+  m_LocalPosition: {x: 0, y: 1, z: -7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

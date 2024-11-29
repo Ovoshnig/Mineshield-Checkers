@@ -8,10 +8,7 @@ public class MonteCarloTreeSearch : IBotAlgorithm
 
     private readonly CheckersLogic _checkersLogic;
 
-    public MonteCarloTreeSearch(CheckersLogic checkersLogic)
-    {
-        _checkersLogic = checkersLogic;
-    }
+    public MonteCarloTreeSearch(CheckersLogic checkersLogic) => _checkersLogic = checkersLogic;
 
     public async UniTask<List<int>> GetMoveAsync(int[,] board, int turn, CheckersLogic logic, CancellationToken cancellationToken)
     {
@@ -35,7 +32,8 @@ public class MonteCarloTreeSearch : IBotAlgorithm
             Backpropagate(selectedNode, simulationResult);
 
             // Периодическая уступка потока другим задачам
-            if (i % 100 == 0) await UniTask.Yield(cancellationToken);
+            if (i % 100 == 0) 
+                await UniTask.Yield(cancellationToken);
         }
 
         return root.GetBestChild().Move;
@@ -95,7 +93,8 @@ public class MonteCarloTreeSearch : IBotAlgorithm
             }
 
             // Периодически уступаем поток
-            if (depth % 5 == 0) await UniTask.Yield(cancellationToken);
+            if (depth % 5 == 0) 
+                await UniTask.Yield(cancellationToken);
         }
 
         return -1; // Ничья
