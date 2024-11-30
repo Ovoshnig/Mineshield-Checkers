@@ -12,27 +12,24 @@ public class MonteCarloTreeSearch : IBotAlgorithm
 
     public async UniTask<List<int>> GetMoveAsync(int[,] board, int turn, CheckersLogic logic, CancellationToken cancellationToken)
     {
-        MCTNode root = new MCTNode(board, turn);
+        MCTNode root = new(board, turn);
 
         List<List<int>> chopIndexes, moveIndexes;
         logic.EnumerateMoves(board, turn, out chopIndexes, out moveIndexes);
         var possibleMoves = chopIndexes.Count > 0 ? chopIndexes : moveIndexes;
 
         foreach (var move in possibleMoves)
-        {
             root.AddChild(new MCTNode(board, turn, move, logic));
-        }
 
         for (int i = 0; i < MaxIterations; i++)
         {
             if (cancellationToken.IsCancellationRequested) break;
 
             MCTNode selectedNode = Select(root);
-            int simulationResult = await SimulateAsync(selectedNode, cancellationToken);
+            int simulationResult = Simulate(selectedNode, cancellationToken);
             Backpropagate(selectedNode, simulationResult);
 
-            // Периодическая уступка потока другим задачам
-            if (i % 100 == 0) 
+            if (i % 50 == 0) 
                 await UniTask.Yield(cancellationToken);
         }
 
@@ -48,7 +45,7 @@ public class MonteCarloTreeSearch : IBotAlgorithm
         return node;
     }
 
-    private async UniTask<int> SimulateAsync(MCTNode node, CancellationToken cancellationToken)
+    private int Simulate(MCTNode node, CancellationToken cancellationToken)
     {
         int[,] simulatedBoard = (int[,])node.Board.Clone();
         int currentPlayer = node.Player;
@@ -56,7 +53,8 @@ public class MonteCarloTreeSearch : IBotAlgorithm
 
         for (int depth = 0; depth < 20; depth++)
         {
-            if (cancellationToken.IsCancellationRequested) return -1;
+            if (cancellationToken.IsCancellationRequested) 
+                return -1;
 
             List<List<int>> chopIndexes, moveIndexes;
             _checkersLogic.EnumerateMoves(simulatedBoard, currentPlayer, out chopIndexes, out moveIndexes);
@@ -91,10 +89,6 @@ public class MonteCarloTreeSearch : IBotAlgorithm
             {
                 currentPlayer = 1 - currentPlayer; // Меняем ход, если нет цепочки рубок
             }
-
-            // Периодически уступаем поток
-            if (depth % 5 == 0) 
-                await UniTask.Yield(cancellationToken);
         }
 
         return -1; // Ничья
