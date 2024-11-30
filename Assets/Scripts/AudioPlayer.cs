@@ -68,7 +68,7 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.PlayOneShot(_chopClips[_clipIndex]);
     }
 
-    private async UniTask PlayDamCreatedSound()
+    private async UniTask PlayDamCreatedSound(int i, int j)
     {
         await UniTask.Yield();
 

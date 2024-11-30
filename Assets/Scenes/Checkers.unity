@@ -5925,7 +5925,7 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 2ec2d90afaacfdb45bf5e0866210595d, type: 3}
   - {fileID: 919132149155446097, guid: e851fe529729b5446a93067626542b79, type: 3}
   - {fileID: 919132149155446097, guid: e40a9af7613a4a94489d63ee7b5fcc19, type: 3}
-  _crownPrefab: {fileID: 78674845765534573, guid: 3246391ed1e90fc4fad30aed9a5a4948, type: 3}
+  _crownPrefab: {fileID: 919132149155446097, guid: f5bed860e764b9f4eb78e9621400db56, type: 3}
   _selectionCube: {fileID: 1334223873}
   _logic: {fileID: 1753311608}
 --- !u!114 &1753311611

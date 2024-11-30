@@ -94,9 +94,9 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(shoodSelect);
     }
 
-    private async UniTask Move(List<int> moveIndex) 
+    private async UniTask Move(List<int> move) 
     {
-        (int i, int j, int iDelta, int jDelta) = (moveIndex[0], moveIndex[1], moveIndex[2], moveIndex[3]);
+        (int i, int j, int iDelta, int jDelta) = (move[0], move[1], move[2], move[3]);
 
         _figureTransform = _figureTransforms[i, j];
 
@@ -131,18 +131,18 @@ public class CheckersVisualizer : MonoBehaviour
         _figureTransforms[rivalI, rivalJ] = null;
     }
 
-    private async UniTask CreateDam()
+    private async UniTask CreateDam(int i, int j)
     {
-        Transform childFigureTransform = _figureTransform.GetChild(0);
-        Vector3 figurePosition = _figureTransform.position;
-        Renderer renderer = childFigureTransform.GetComponent<Renderer>();
+        Transform figureTransform = _figureTransforms[i, j];
+        Vector3 figurePosition = figureTransform.position;
+
+        Renderer renderer = figureTransform.GetComponent<Renderer>();
         Bounds bounds = renderer.bounds;
         float positionY = bounds.center.y * 0.6f + bounds.extents.y;
         Vector3 crownPosition = figurePosition + new Vector3(0, positionY + 15f, 0);
 
-        GameObject crown = Instantiate(_crownPrefab, crownPosition, Quaternion.Euler(-90f, 0f, 0f));
+        GameObject crown = Instantiate(_crownPrefab, crownPosition, Quaternion.identity, figureTransform);
         Transform crownTransform = crown.transform;
-        crownTransform.SetParent(childFigureTransform);
 
         await crownTransform.DOMoveY(positionY, _crownAppearanceDuration)
             .SetEase(Ease.InQuad)

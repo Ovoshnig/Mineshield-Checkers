@@ -21,12 +21,12 @@ public class CheckersLogic : MonoBehaviour
     private IBotAlgorithm _botAlgorithm;
     private CancellationTokenSource _cts = new();
     private int _turn = 0;
-        
+
     public event Func<int, int, int, UniTask> FigurePlaced;
     public event Action<List<int>, bool> FigureSelected;
     public event Func<List<int>, UniTask> FigureMoved;
     public event Func<List<int>, UniTask> FigureChopped;
-    public event Func<UniTask> DamCreated;
+    public event Func<int, int, UniTask> DamCreated;
     public event Func<int, float, CancellationToken, UniTask> GameEnding;
 
     public float MoveSpeed => _moveSpeed;
@@ -140,7 +140,7 @@ public class CheckersLogic : MonoBehaviour
                         {
                             break;
                         }
-                    } 
+                    }
                 }
 
                 if (_figureCounts[RivalIndex] == 0)
@@ -178,7 +178,7 @@ public class CheckersLogic : MonoBehaviour
                             {
                                 if (LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta))
                                 {
-                                    if ( board[i + 2 * iDelta, j + 2 * jDelta] == -1)
+                                    if (board[i + 2 * iDelta, j + 2 * jDelta] == -1)
                                     {
                                         chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
                                     }
@@ -236,7 +236,7 @@ public class CheckersLogic : MonoBehaviour
 
                                         rivalCount++;
                                     }
-                                }   
+                                }
                                 else if (board[i + moveLength * iDelta, j + moveLength * jDelta] == -1)
                                 {
                                     if (rivalCount == 1)
@@ -319,7 +319,7 @@ public class CheckersLogic : MonoBehaviour
                         {
                             if (rivalCount == 1)
                             {
-                                chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta, 
+                                chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta,
                                     rivalIndexes[0], rivalIndexes[1] });
                             }
                         }
@@ -447,7 +447,7 @@ public class CheckersLogic : MonoBehaviour
         UpdateBoardAfterMove(_board, i, j, iDelta, jDelta, oppositeBoardSide, isDam);
 
         if (j + jDelta == oppositeBoardSide && !isDam)
-            await DamCreated.InvokeAndWaitAsync();
+            await DamCreated.InvokeAndWaitAsync(i + iDelta, j + jDelta);
     }
 
     public async UniTask MakeMove(List<int> move, bool isChop)
