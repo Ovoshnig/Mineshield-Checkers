@@ -23,11 +23,7 @@ public class PlayerInputHandler : MonoBehaviour
         Cursor.visible = true;
     }
 
-    private void OnDisable()
-    {
-        _playerInput.Player.ClickOnFigure.performed -= OnClickPerformed;
-        _playerInput.Disable();
-    }
+    private void OnDisable() => _playerInput.Disable();
 
     private void OnClickPerformed(InputAction.CallbackContext context)
     {

@@ -18,7 +18,6 @@ public class CheckersLogic : MonoBehaviour
     private GameBoard _gameBoard;
     private int[] _figureCounts = { 12, 12 };
     private IBotAlgorithm _botAlgorithm;
-    private CancellationTokenSource _cts = new();
     private int _turn = 0;
 
     public event Func<int, int, int, UniTask> FigurePlaced;
@@ -47,22 +46,17 @@ public class CheckersLogic : MonoBehaviour
 
     private async void Start()
     {
-        await MakeStartPlacement();
-        int winnerTurn = await ExecuteGameLoop();
-        await Win(winnerTurn, _cts.Token);
+        using CancellationTokenSource cts = new();
+        await MakeStartPlacement(cts.Token);
+
+        using CancellationTokenSource cts1 = new();
+        int winnerTurn = await ExecuteGameLoop(cts1.Token);
+
+        using CancellationTokenSource cts2 = new();
+        await Win(winnerTurn, cts2.Token);
     }
 
-    private void OnDisable()
-    {
-        if (_cts != null)
-        {
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null;
-        }
-    }
-
-    private async UniTask MakeStartPlacement()
+    private async UniTask MakeStartPlacement(CancellationToken token)
     {
         _gameBoard.InitializeBoard();
         _gameBoard.SetUpStartingPositions();
@@ -76,13 +70,13 @@ public class CheckersLogic : MonoBehaviour
                 {
                     int playerIndex = piece % 2;
                     FigurePlaced?.Invoke(i, j, playerIndex);
-                    await UniTask.WaitForSeconds(_placementDelay);
+                    await UniTask.WaitForSeconds(_placementDelay, cancellationToken: token);
                 }
             }
         }
     }
 
-    private async UniTask<int> ExecuteGameLoop()
+    private async UniTask<int> ExecuteGameLoop(CancellationToken token)
     {
         List<List<int>> chopIndexes, moveIndexes;
         List<int> moveIndex;
@@ -101,15 +95,15 @@ public class CheckersLogic : MonoBehaviour
             List<List<int>> indexes = chopIndexes.Count > 0 ? chopIndexes : moveIndexes;
 
             if (_turn % 2 == 0)
-                moveIndex = await GetPlayerMove(indexes, chopIndexes.Count > 0);
+                moveIndex = await GetPlayerMove(indexes, chopIndexes.Count > 0, token);
             else
-                moveIndex = await GetAIMove(indexes);
+                moveIndex = await GetAIMove(indexes, token);
 
             if (chopIndexes.Count > 0)
             {
                 while (true)
                 {
-                    await MakeMove(moveIndex);
+                    await MakeMove(moveIndex, token);
 
                     if (_figureCounts[RivalIndex] == 0)
                     {
@@ -125,9 +119,9 @@ public class CheckersLogic : MonoBehaviour
                         if (chopIndexes.Count > 0)
                         {
                             if (_turn % 2 == 0)
-                                moveIndex = await GetPlayerMove(chopIndexes, true);
+                                moveIndex = await GetPlayerMove(chopIndexes, true, token);
                             else
-                                moveIndex = await GetAIMove(chopIndexes);
+                                moveIndex = await GetAIMove(chopIndexes, token);
                         }
                         else
                         {
@@ -141,7 +135,7 @@ public class CheckersLogic : MonoBehaviour
             }
             else
             {
-                await MakeMove(moveIndex);
+                await MakeMove(moveIndex, token);
             }
 
             _turn++;
@@ -150,7 +144,7 @@ public class CheckersLogic : MonoBehaviour
         return winnerTurn;
     }
 
-    private async UniTask<List<int>> GetPlayerMove(List<List<int>> validMoves, bool isChopMove)
+    private async UniTask<List<int>> GetPlayerMove(List<List<int>> validMoves, bool isChopMove, CancellationToken token)
     {
         List<int> inputStartPosition = null;
 
@@ -216,21 +210,17 @@ public class CheckersLogic : MonoBehaviour
         _playerInput.ClickPerformed += OnClick;
 
         while (finding == null)
-            await UniTask.Yield();
+            await UniTask.Yield(cancellationToken: token);
 
         _playerInput.ClickPerformed -= OnClick;
 
         return finding;
     }
 
-    private async UniTask<List<int>> GetAIMove(List<List<int>> allowedMoves)
-    {
-        using CancellationTokenSource cts = new();
+    private async UniTask<List<int>> GetAIMove(List<List<int>> allowedMoves, CancellationToken token) => 
+        await _botAlgorithm.GetMoveAsync(_gameBoard.CloneBoard(), _turn % 2, allowedMoves, token);
 
-        return await _botAlgorithm.GetMoveAsync(_gameBoard.CloneBoard(), _turn % 2, allowedMoves, cts.Token);
-    }
-
-    public async UniTask MakeMove(List<int> move)
+    public async UniTask MakeMove(List<int> move, CancellationToken token)
     {
         bool isChop = move.Count >= 6;
 
@@ -239,13 +229,13 @@ public class CheckersLogic : MonoBehaviour
 
         bool promoted = _gameBoard.ApplyMove(move, _turn, ref _figureCounts);
 
-        await FigureMoved.InvokeAndWaitAsync(move);
+        await FigureMoved.InvokeAndWaitAsync(token, move);
 
         int i = move[0] + move[2];
         int j = move[1] + move[3];
 
         if (promoted)
-            await DamCreated.InvokeAndWaitAsync(i, j);
+            await DamCreated.InvokeAndWaitAsync(token, i, j);
     }
 
     private async UniTask Win(int winnerTurn, CancellationToken token)
