@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1233149941 &-7120875252153046577
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop5_{-7120875252153046577}
+  m_AudioClip: {fileID: 8300000, guid: 0a2d7b0034fb16e48a9cae755818f96f, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-2261171147588298313
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop6_{-2261171147588298313}
+  m_AudioClip: {fileID: 8300000, guid: 50b7bfe8fc180cb45a0ec849139c262c, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &1182163710358123241
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop4_{1182163710358123241}
+  m_AudioClip: {fileID: 8300000, guid: ecc2b95d8aac77d4391820ce0b98036e, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &1874221215155461122
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop3_{1874221215155461122}
+  m_AudioClip: {fileID: 8300000, guid: ee2a3d396ed405f4190e8eb24fe295a9, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &5588953804908324328
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop2_{5588953804908324328}
+  m_AudioClip: {fileID: 8300000, guid: 1cb3b8197c5576d4f97669bc00da8487, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1307931743 &6418180475301049370
+AudioRandomContainer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ChopRandom
+  m_Volume: 0
+  m_Pitch: 0
+  m_AutomaticTriggerTime: 0
+  m_LoopCount: 1
+  m_VolumeRandomizationRange: {x: -2, y: 2}
+  m_PitchRandomizationRange: {x: -100, y: 100}
+  m_AutomaticTriggerTimeRandomizationRange: {x: 0, y: 0}
+  m_LoopCountRandomizationRange: {x: 0, y: 0}
+  m_Elements:
+  - {fileID: 6907892592439729455}
+  - {fileID: 5588953804908324328}
+  - {fileID: 1874221215155461122}
+  - {fileID: 1182163710358123241}
+  - {fileID: -7120875252153046577}
+  - {fileID: -2261171147588298313}
+  m_AvoidRepeatingLast: 0
+  m_PlaybackMode: 2
+  m_TriggerMode: 1
+  m_AutomaticTriggerMode: 1
+  m_LoopMode: 1
+  m_VolumeRandomizationEnabled: 1
+  m_PitchRandomizationEnabled: 1
+  m_AutomaticTriggerTimeRandomizationEnabled: 0
+  m_LoopCountRandomizationEnabled: 0
+--- !u!1233149941 &6907892592439729455
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Chop1_{6907892592439729455}
+  m_AudioClip: {fileID: 8300000, guid: e927d8fb46ca9f841881cae1de09aaae, type: 3}
+  m_Volume: 0
+  m_Enabled: 1

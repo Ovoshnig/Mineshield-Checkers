@@ -2,14 +2,15 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Audio;
 
 [RequireComponent(typeof(AudioSource))]
 public class AudioPlayer : MonoBehaviour
 {
-    [SerializeField] private AudioClip[] _putClips;
-    [SerializeField] private AudioClip[] _dragClips;
-    [SerializeField] private AudioClip[] _chopClips;
-    [SerializeField] private AudioClip _damCreatedClip;
+    [SerializeField] private AudioResource _putResource;
+    [SerializeField] private AudioResource _dragResource;
+    [SerializeField] private AudioResource _chopResource;
+    [SerializeField] private AudioResource _damCreatedResource;
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
     [SerializeField] private CheckersLogic _logic;
@@ -39,18 +40,18 @@ public class AudioPlayer : MonoBehaviour
 
     private async UniTask PlayPutSound(int i, int j, int index)
     {
-        _clipIndex = Random.Range(0, _putClips.Length);
         await UniTask.Yield();
 
-        _audioSource.PlayOneShot(_putClips[_clipIndex]);
+        _audioSource.resource = _putResource;
+        _audioSource.Play();
     }
 
     private async UniTask PlayMoveSound(List<int> moveIndex)
     {
-        _clipIndex = Random.Range(0, _dragClips.Length);
         await UniTask.Yield();
 
-        _audioSource.PlayOneShot(_dragClips[_clipIndex]);
+        _audioSource.resource = _dragResource;
+        _audioSource.Play();
     }
 
     private async UniTask PlayChopSound(List<int> move)
@@ -61,18 +62,18 @@ public class AudioPlayer : MonoBehaviour
         Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
         float distance = Vector3.Distance(startPosition, rivalPosition);
         float chopDelay = (distance / _logic.MoveSpeed);
-
-        _clipIndex = Random.Range(0, _chopClips.Length);
         await UniTask.WaitForSeconds(chopDelay);
 
-        _audioSource.PlayOneShot(_chopClips[_clipIndex]);
+        _audioSource.resource = _chopResource;
+        _audioSource.Play();
     }
 
     private async UniTask PlayDamCreatedSound(int i, int j)
     {
         await UniTask.Yield();
 
-        _audioSource.PlayOneShot(_damCreatedClip);
+        _audioSource.resource = _damCreatedResource;
+        _audioSource.Play();
     }
 
     private async UniTask PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)

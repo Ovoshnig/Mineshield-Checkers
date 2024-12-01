@@ -985,7 +985,6 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 2ec2d90afaacfdb45bf5e0866210595d, type: 3}
   - {fileID: 919132149155446097, guid: e851fe529729b5446a93067626542b79, type: 3}
   - {fileID: 919132149155446097, guid: e40a9af7613a4a94489d63ee7b5fcc19, type: 3}
-  _swingClip: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
   _difficultySlider: {fileID: 1366541576}
   _offset: 5.5
   _duration: 0.6
@@ -1014,8 +1013,8 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
-  m_Resource: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 6418180475301049370, guid: b18fb01409e08ba4aba1f3cd39fd418a, type: 2}
   m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
@@ -1481,7 +1480,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 241589969}
   m_Direction: 0
   m_MinValue: 1
-  m_MaxValue: 6
+  m_MaxValue: 7
   m_WholeNumbers: 1
   m_Value: 1
   m_OnValueChanged:

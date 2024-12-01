@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class FigureChooser : MonoBehaviour
 {
     [SerializeField] private GameObject[] _figurePrefabs;
-    [SerializeField] private AudioClip _swingClip;
     [SerializeField] private Slider _difficultySlider;
     [SerializeField] private float _offset = 1f;
     [SerializeField] private float _duration = 0.5f;
@@ -24,8 +23,12 @@ public class FigureChooser : MonoBehaviour
 
     private void Awake()
     {
-        InitializeAudioSource();
-        InitializeInput();
+        _audioSource = GetComponent<AudioSource>();
+
+        _playerInput = new PlayerInput();
+        _playerInput.FigureChoice.SwapLeft.performed += ctx => SwapFigure(-1).Forget();
+        _playerInput.FigureChoice.SwapRight.performed += ctx => SwapFigure(1).Forget();
+        _playerInput.FigureChoice.Choose.performed += ChooseFigure;
     }
 
     private void OnEnable()
@@ -43,20 +46,6 @@ public class FigureChooser : MonoBehaviour
     }
 
     private void Start() => CreateFigureInstances();
-
-    private void InitializeAudioSource()
-    {
-        _audioSource = GetComponent<AudioSource>();
-        _audioSource.clip = _swingClip;
-    }
-
-    private void InitializeInput()
-    {
-        _playerInput = new PlayerInput();
-        _playerInput.FigureChoice.SwapLeft.performed += ctx => SwapFigure(-1).Forget();
-        _playerInput.FigureChoice.SwapRight.performed += ctx => SwapFigure(1).Forget();
-        _playerInput.FigureChoice.Choose.performed += ChooseFigure;
-    }
 
     private void CreateFigureInstances()
     {
