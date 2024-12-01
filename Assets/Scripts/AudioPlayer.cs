@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -14,9 +15,9 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
     [SerializeField] private CheckersLogic _logic;
-    [SerializeField] private AudioSource[] _audioSources;
+    [SerializeField] private List<AudioSource> _audioSources;
 
-    private void Awake() => _audioSources = GetComponents<AudioSource>();
+    private void Awake() => _audioSources = GetComponents<AudioSource>().ToList();
 
     private void OnEnable()
     {
@@ -38,7 +39,21 @@ public class AudioPlayer : MonoBehaviour
 
     private void PlaySound(AudioResource audioResource)
     {
-        AudioSource audioSource = _audioSources[0].isPlaying ? _audioSources[1] : _audioSources[0];
+        AudioSource idleAudioSource = _audioSources.FirstOrDefault(a => !a.isPlaying);
+        AudioSource audioSource;
+
+        if (idleAudioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+
+            _audioSources.Add(audioSource);
+        }
+        else
+        {
+            audioSource = idleAudioSource;
+        }
+
         audioSource.resource = audioResource;
         audioSource.Play();
     }
