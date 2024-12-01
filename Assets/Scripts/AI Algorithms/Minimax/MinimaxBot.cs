@@ -5,7 +5,9 @@ using Cysharp.Threading.Tasks;
 
 public class MinimaxBot : IBotAlgorithm
 {
-    private int _maxDepth = 4;
+    private readonly int _maxDepth;
+
+    public MinimaxBot() => _maxDepth = FigureChooser.ChosenDifficulty;
 
     public async UniTask<List<int>> GetMoveAsync(int[,] board, int playerIndex, List<List<int>> allowedMoves, CancellationToken cancellationToken)
     {

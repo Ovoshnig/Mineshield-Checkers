@@ -39,7 +39,6 @@ public static class EventExtensions
 
             if (parameters.Length > 0 && parameters[^1].ParameterType == typeof(CancellationToken))
             {
-                // Если метод принимает токен, добавляем его в аргументы
                 object[] updatedArgs = new object[args.Length + 1];
                 Array.Copy(args, updatedArgs, args.Length);
                 updatedArgs[^1] = cancellationToken;
@@ -49,7 +48,6 @@ public static class EventExtensions
             }
             else
             {
-                // Если метод не принимает токен, вызываем его без токена
                 var task = (UniTask)handler.DynamicInvoke(args);
                 tasks.Add(task);
             }

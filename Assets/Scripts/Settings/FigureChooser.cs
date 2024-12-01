@@ -3,12 +3,14 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(AudioSource))]
 public class FigureChooser : MonoBehaviour
 {
     [SerializeField] private GameObject[] _figurePrefabs;
     [SerializeField] private AudioClip _swingClip;
+    [SerializeField] private Slider _difficultySlider;
     [SerializeField] private float _offset = 1f;
     [SerializeField] private float _duration = 0.5f;
 
@@ -18,6 +20,7 @@ public class FigureChooser : MonoBehaviour
     private bool _isMoving;
 
     public static GameObject ChosenFigure { get; private set; } = null;
+    public static int ChosenDifficulty { get; private set; } = 3;
 
     private void Awake()
     {
@@ -25,9 +28,19 @@ public class FigureChooser : MonoBehaviour
         InitializeInput();
     }
 
-    private void OnEnable() => _playerInput.Enable();
+    private void OnEnable()
+    {
+        _playerInput.Enable();
 
-    private void OnDisable() => _playerInput.Disable();
+        _difficultySlider.onValueChanged.AddListener(value => ChosenDifficulty = (int)value);
+    }
+
+    private void OnDisable()
+    {
+        _playerInput.Disable();
+
+        _difficultySlider.onValueChanged.RemoveListener(value => ChosenDifficulty = (int)value);
+    }
 
     private void Start() => CreateFigureInstances();
 
