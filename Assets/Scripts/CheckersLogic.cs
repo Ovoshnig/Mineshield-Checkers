@@ -15,9 +15,8 @@ public class CheckersLogic : MonoBehaviour
     [SerializeField] private string _botAlgorithmType = "Minimax";
     [SerializeField] private PlayerInputHandler _playerInput;
 
-    private readonly int[,] _board = new int[8, 8];
-    private readonly int[] _figureCounts = { 12, 12 };
-    private readonly IReadOnlyList<int> _directions = new int[] { -1, 1 };
+    private GameBoard _gameBoard;
+    private int[] _figureCounts = { 12, 12 };
     private IBotAlgorithm _botAlgorithm;
     private CancellationTokenSource _cts = new();
     private int _turn = 0;
@@ -37,11 +36,11 @@ public class CheckersLogic : MonoBehaviour
     private void Awake()
     {
         _playerInput = GetComponent<PlayerInputHandler>();
+        _gameBoard = new GameBoard();
 
         _botAlgorithm = _botAlgorithmType switch
         {
-            "Minimax" => new MinimaxBot(this),
-            "MCTS" => new MonteCarloTreeSearch(this),
+            "Minimax" => new MinimaxBot(),
             _ => throw new InvalidOperationException("Unknown bot algorithm type")
         };
     }
@@ -65,25 +64,19 @@ public class CheckersLogic : MonoBehaviour
 
     private async UniTask MakeStartPlacement()
     {
+        _gameBoard.InitializeBoard();
+        _gameBoard.SetUpStartingPositions();
+
         for (int i = 0; i < 8; i++)
-            for (int j = 0; j < 8; j++)
-                _board[i, j] = -1;
-
-        foreach (int delta in new int[] { 0, 5 })
         {
-            int playerIndex = delta == 0 ? 0 : 1;
-
-            for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
             {
-                for (int j = delta; j < 3 + delta; j++)
+                int piece = _gameBoard.Board[i, j];
+                if (piece != -1)
                 {
-                    if (i % 2 == j % 2)
-                    {
-                        _board[i, j] = delta == 0 ? 0 : 1;
-                        FigurePlaced?.Invoke(i, j, playerIndex);
-
-                        await UniTask.WaitForSeconds(_placementDelay);
-                    }
+                    int playerIndex = piece % 2;
+                    FigurePlaced?.Invoke(i, j, playerIndex);
+                    await UniTask.WaitForSeconds(_placementDelay);
                 }
             }
         }
@@ -97,7 +90,7 @@ public class CheckersLogic : MonoBehaviour
 
         while (true)
         {
-            EnumerateMoves(_board, _turn, out chopIndexes, out moveIndexes);
+            _gameBoard.EnumerateMoves(_turn, out chopIndexes, out moveIndexes);
 
             if (chopIndexes.Count == 0 && moveIndexes.Count == 0)
             {
@@ -116,7 +109,7 @@ public class CheckersLogic : MonoBehaviour
             {
                 while (true)
                 {
-                    await MakeMove(moveIndex, isChop: true);
+                    await MakeMove(moveIndex);
 
                     if (_figureCounts[RivalIndex] == 0)
                     {
@@ -127,7 +120,7 @@ public class CheckersLogic : MonoBehaviour
                     {
                         int i = moveIndex[0] + moveIndex[2];
                         int j = moveIndex[1] + moveIndex[3];
-                        TryChop(_board, _turn, i, j, out chopIndexes);
+                        _gameBoard.TryChop(_turn, i, j, out chopIndexes);
 
                         if (chopIndexes.Count > 0)
                         {
@@ -148,191 +141,13 @@ public class CheckersLogic : MonoBehaviour
             }
             else
             {
-                await MakeMove(moveIndex, isChop: false);
+                await MakeMove(moveIndex);
             }
 
             _turn++;
         }
 
         return winnerTurn;
-    }
-
-    public void EnumerateMoves(int[,] board, int turn, out List<List<int>> chopIndexes, out List<List<int>> moveIndexes)
-    {
-        chopIndexes = new List<List<int>>();
-        moveIndexes = new List<List<int>>();
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (board[i, j] == turn % 2) // Фигура текущего игрока
-                {
-                    int jDelta = turn % 2 == 0 ? 1 : -1;
-
-                    foreach (int iDelta in _directions) // Проверки всех вариантов ходов вперёд
-                    {
-                        if (LogicChecker.IsCanMove(i + iDelta, j + jDelta))
-                        {
-                            if (LogicChecker.IsRival(board, turn, i + iDelta, j + jDelta))
-                            {
-                                if (LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta))
-                                {
-                                    if (board[i + 2 * iDelta, j + 2 * jDelta] == -1)
-                                    {
-                                        chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
-                                    }
-                                }
-                            }
-                            else if (board[i + iDelta, j + jDelta] == -1)
-                            {
-                                moveIndexes.Add(new List<int> { i, j, iDelta, jDelta });
-                            }
-                        }
-                    }
-
-                    jDelta = -jDelta;
-
-                    foreach (int iDelta in _directions) // Проверки, есть ли сзади противник, которого можно срубить
-                    {
-                        if (LogicChecker.IsCanMove(i + iDelta, j + jDelta))
-                        {
-                            if (LogicChecker.IsRival(board, turn, i + iDelta, j + jDelta))
-                            {
-                                if (LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta))
-                                {
-                                    if (board[i + 2 * iDelta, j + 2 * jDelta] == -1)
-                                    {
-                                        chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else if (board[i, j] == turn % 2 + 2) // Дамка текущего игрока
-                {
-                    foreach (int iDelta in _directions)
-                    {
-                        foreach (int jDelta in _directions)
-                        {
-                            List<int> rivalIndexes = new();
-
-                            int moveLength = 1;
-                            int rivalCount = 0;
-
-                            while (LogicChecker.IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
-                            {
-                                if (LogicChecker.IsRival(board, turn, i + moveLength * iDelta, j + moveLength * jDelta))
-                                {
-                                    if (rivalCount == 1)
-                                    {
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        rivalIndexes.Add(i + moveLength * iDelta);
-                                        rivalIndexes.Add(j + moveLength * jDelta);
-
-                                        rivalCount++;
-                                    }
-                                }
-                                else if (board[i + moveLength * iDelta, j + moveLength * jDelta] == -1)
-                                {
-                                    if (rivalCount == 1)
-                                    {
-                                        chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta, rivalIndexes[0], rivalIndexes[1] });
-                                    }
-                                    else
-                                    {
-                                        moveIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta });
-                                    }
-                                }
-                                else
-                                {
-                                    break;
-                                }
-
-                                moveLength++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public void TryChop(int[,] board, int turn, int i, int j, out List<List<int>> chopIndexes)
-    {
-        chopIndexes = new List<List<int>>();
-
-        if (board[i, j] == turn % 2) // Ходит фигура
-        {
-            foreach (int iDelta in _directions) // Проверки, есть ли противник, которого можно срубить
-            {
-                foreach (int jDelta in _directions)
-                {
-                    if (LogicChecker.IsCanMove(i + iDelta, j + jDelta))
-                    {
-                        if (LogicChecker.IsRival(board, turn, i + iDelta, j + jDelta))
-                        {
-                            if (LogicChecker.IsCanMove(i + 2 * iDelta, j + 2 * jDelta))
-                            {
-                                if (board[i + 2 * iDelta, j + 2 * jDelta] == -1)
-                                {
-                                    chopIndexes.Add(new List<int> { i, j, 2 * iDelta, 2 * jDelta, i + iDelta, j + jDelta });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else if (board[i, j] == turn % 2 + 2) // Ходит дамка
-        {
-            foreach (int iDelta in _directions) // Проверки, есть ли сзади противник, которого можно срубить
-            {
-                foreach (int jDelta in _directions)
-                {
-                    List<int> rivalIndexes = new();
-
-                    int moveLength = 1;
-                    int rivalCount = 0;
-
-                    while (LogicChecker.IsCanMove(i + moveLength * iDelta, j + moveLength * jDelta))
-                    {
-                        if (LogicChecker.IsRival(board, turn, i + moveLength * iDelta, j + moveLength * jDelta))
-                        {
-                            if (rivalCount == 1)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                rivalIndexes.Add(i + moveLength * iDelta);
-                                rivalIndexes.Add(j + moveLength * jDelta);
-
-                                rivalCount++;
-                            }
-                        }
-                        else if (board[i + moveLength * iDelta, j + moveLength * jDelta] == -1)
-                        {
-                            if (rivalCount == 1)
-                            {
-                                chopIndexes.Add(new List<int> { i, j, moveLength * iDelta, moveLength * jDelta,
-                                    rivalIndexes[0], rivalIndexes[1] });
-                            }
-                        }
-                        else
-                        {
-                            break;
-                        }
-
-                        moveLength++;
-                    }
-                }
-            }
-        }
     }
 
     private async UniTask<List<int>> GetPlayerMove(List<List<int>> turnIndexes)
@@ -413,65 +228,25 @@ public class CheckersLogic : MonoBehaviour
     {
         using CancellationTokenSource cts = new();
 
-        return await _botAlgorithm.GetMoveAsync(_board, _turn % 2, allowedMoves, cts.Token);
+        return await _botAlgorithm.GetMoveAsync(_gameBoard.CloneBoard(), _turn % 2, allowedMoves, cts.Token);
     }
 
-    private void UpdateBoardAfterMove(int[,] board, int i, int j, int iDelta, int jDelta, int oppositeBoardSide, bool isDam)
+    public async UniTask MakeMove(List<int> move)
     {
-        if (j + jDelta == oppositeBoardSide && !isDam)
-            board[i + iDelta, j + jDelta] = _turn % 2 + 2;
-        else
-            board[i + iDelta, j + jDelta] = board[i, j];
+        bool isChop = move.Count >= 6;
 
-        board[i, j] = -1;
-    }
-
-    private void RemoveRivalPiece(int[,] board, int rivalI, int rivalJ, int[] figureCounts)
-    {
-        board[rivalI, rivalJ] = -1;
-        figureCounts[RivalIndex]--;
-    }
-
-    private async UniTask PerformMove(List<int> move, bool isChop)
-    {
-        var (i, j, iDelta, jDelta) = (move[0], move[1], move[2], move[3]);
-        int oppositeBoardSide = _turn % 2 == 0 ? 7 : 0;
-        bool isDam = _board[i, j] == _turn % 2 + 2;
-
-        if (isChop)
-        {
-            var (rivalI, rivalJ) = (move[4], move[5]);
-            RemoveRivalPiece(_board, rivalI, rivalJ, _figureCounts);
-        }
-
-        UpdateBoardAfterMove(_board, i, j, iDelta, jDelta, oppositeBoardSide, isDam);
-
-        if (j + jDelta == oppositeBoardSide && !isDam)
-            await DamCreated.InvokeAndWaitAsync(i + iDelta, j + jDelta);
-    }
-
-    public async UniTask MakeMove(List<int> move, bool isChop)
-    {
         if (isChop)
             FigureChopped?.Invoke(move);
 
+        bool promoted = _gameBoard.ApplyMove(move, _turn, ref _figureCounts);
+
         await FigureMoved.InvokeAndWaitAsync(move);
-        await PerformMove(move, isChop);
-    }
 
-    public void SimulateMove(int[,] board, int[] figureCounts, List<int> move, bool isChop)
-    {
-        var (i, j, iDelta, jDelta) = (move[0], move[1], move[2], move[3]);
-        int oppositeBoardSide = _turn % 2 == 0 ? 7 : 0;
-        bool isDam = _board[i, j] == _turn % 2 + 2;
+        int i = move[0] + move[2];
+        int j = move[1] + move[3];
 
-        if (isChop)
-        {
-            var (rivalI, rivalJ) = (move[4], move[5]);
-            RemoveRivalPiece(board, rivalI, rivalJ, figureCounts);
-        }
-
-        UpdateBoardAfterMove(board, i, j, iDelta, jDelta, oppositeBoardSide, isDam);
+        if (promoted)
+            await DamCreated.InvokeAndWaitAsync(i, j);
     }
 
     private async UniTask Win(int winnerTurn, CancellationToken token)
