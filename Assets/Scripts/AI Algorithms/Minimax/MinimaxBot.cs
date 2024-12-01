@@ -11,7 +11,7 @@ public class MinimaxBot : IBotAlgorithm
     {
         await UniTask.Yield();
 
-        GameBoard gameBoard = new GameBoard(board);
+        GameBoard gameBoard = new(board);
 
         int bestEval = int.MinValue;
         List<int> bestMove = null;
@@ -71,11 +71,13 @@ public class MinimaxBot : IBotAlgorithm
                 if (beta <= alpha)
                     break; // Beta cut-off
             }
+
             return maxEval;
         }
         else
         {
             int minEval = int.MaxValue;
+
             foreach (var move in moves)
             {
                 if (cancellationToken.IsCancellationRequested)

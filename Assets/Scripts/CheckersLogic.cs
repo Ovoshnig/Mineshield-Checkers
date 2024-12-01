@@ -101,7 +101,7 @@ public class CheckersLogic : MonoBehaviour
             List<List<int>> indexes = chopIndexes.Count > 0 ? chopIndexes : moveIndexes;
 
             if (_turn % 2 == 0)
-                moveIndex = await GetPlayerMove(indexes);
+                moveIndex = await GetPlayerMove(indexes, chopIndexes.Count > 0);
             else
                 moveIndex = await GetAIMove(indexes);
 
@@ -125,7 +125,7 @@ public class CheckersLogic : MonoBehaviour
                         if (chopIndexes.Count > 0)
                         {
                             if (_turn % 2 == 0)
-                                moveIndex = await GetPlayerChopMove(chopIndexes);
+                                moveIndex = await GetPlayerMove(chopIndexes, true);
                             else
                                 moveIndex = await GetAIMove(chopIndexes);
                         }
@@ -150,76 +150,75 @@ public class CheckersLogic : MonoBehaviour
         return winnerTurn;
     }
 
-    private async UniTask<List<int>> GetPlayerMove(List<List<int>> turnIndexes)
+    private async UniTask<List<int>> GetPlayerMove(List<List<int>> validMoves, bool isChopMove)
     {
-        List<int> inputPosition = new();
-        List<int> inputStartPosition = new();
-        bool isStartPositionReceived = false;
+        List<int> inputStartPosition = null;
 
-        while (true)
+        if (isChopMove)
         {
-            inputPosition = new();
-
-            await _playerInput.GetPlayerInput(inputPosition);
-
-            if (turnIndexes.Find(x => x.GetRange(0, 2).SequenceEqual(inputPosition)) != null)
-            {
-                inputStartPosition = new List<int>(inputPosition);
-                isStartPositionReceived = true;
-
-                FigureSelected?.Invoke(inputStartPosition, true);
-            }
-            else if (isStartPositionReceived)
-            {
-                var (iStart, jStart) = (inputStartPosition[0], inputStartPosition[1]);
-                var (iEnd, jEnd) = (inputPosition[0], inputPosition[1]);
-                int iDelta = iEnd - iStart;
-                int jDelta = jEnd - jStart;
-                List<int> playerIndexes = new() { iStart, jStart, iDelta, jDelta };
-
-                var finding = turnIndexes.Find(x => x.GetRange(0, 4).SequenceEqual(playerIndexes));
-
-                if (finding == null)
-                {
-                    isStartPositionReceived = false;
-                    inputStartPosition = new();
-
-                    FigureSelected?.Invoke(inputStartPosition, false);
-                }
-                else
-                {
-                    FigureSelected?.Invoke(inputStartPosition, false);
-
-                    return finding;
-                }
-            }
+            inputStartPosition = validMoves[0].GetRange(0, 2);
+            FigureSelected?.Invoke(inputStartPosition, true);
         }
-    }
-
-    private async UniTask<List<int>> GetPlayerChopMove(List<List<int>> turnIndexes)
-    {
-        List<int> inputEndPosition = new();
-        List<int> inputStartPosition = turnIndexes[0].GetRange(0, 2);
-        FigureSelected?.Invoke(inputStartPosition, true);
 
         List<int> finding = null;
 
-        while (finding == null)
+        void OnClick(Vector2 mousePosition)
         {
-            inputEndPosition = new();
+            Vector3 hitPoint = Vector3.zero;
+            Ray ray = Camera.main.ScreenPointToRay(mousePosition);
 
-            await _playerInput.GetPlayerInput(inputEndPosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                hitPoint = hit.point;
+                (int i, int j) = CoordinateTranslator.Position2Indexes(hitPoint);
 
-            var (iStart, jStart) = (inputStartPosition[0], inputStartPosition[1]);
-            var (iEnd, jEnd) = (inputEndPosition[0], inputEndPosition[1]);
-            int iDelta = iEnd - iStart;
-            int jDelta = jEnd - jStart;
-            List<int> playerIndexes = new() { iDelta, jDelta };
+                List<int> inputPosition = new() { i, j };
 
-            finding = turnIndexes.Find(x => x.GetRange(2, 2).SequenceEqual(playerIndexes));
+                if (inputStartPosition == null)
+                {
+                    if (validMoves.Any(x => x.GetRange(0, 2).SequenceEqual(inputPosition)))
+                    {
+                        inputStartPosition = new List<int>(inputPosition);
+                        FigureSelected?.Invoke(inputStartPosition, true);
+                    }
+                }
+                else
+                {
+                    var (iStart, jStart) = (inputStartPosition[0], inputStartPosition[1]);
+                    var (iEnd, jEnd) = (i, j);
+                    int iDelta = iEnd - iStart;
+                    int jDelta = jEnd - jStart;
+
+                    List<int> playerIndexes = new() { iStart, jStart, iDelta, jDelta };
+                    finding = validMoves.Find(x => x.GetRange(0, 4).SequenceEqual(playerIndexes));
+
+                    if (finding == null)
+                    {
+                        FigureSelected?.Invoke(inputStartPosition, false);
+                        inputStartPosition = null;
+                    }
+                    else
+                    {
+                        FigureSelected?.Invoke(inputStartPosition, false);
+                    }
+                }
+            }
+            else
+            {
+                if (inputStartPosition != null)
+                {
+                    FigureSelected?.Invoke(inputStartPosition, false);
+                    inputStartPosition = null;
+                }
+            }
         }
 
-        FigureSelected?.Invoke(inputStartPosition, false);
+        _playerInput.ClickPerformed += OnClick;
+
+        while (finding == null)
+            await UniTask.Yield();
+
+        _playerInput.ClickPerformed -= OnClick;
 
         return finding;
     }

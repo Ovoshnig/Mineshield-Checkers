@@ -1,18 +1,18 @@
-using Cysharp.Threading.Tasks;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {
     private PlayerInput _playerInput;
-    private bool _isClicked = false;
+    private Vector2 _clickPosition;
+
+    public event Action<Vector2> ClickPerformed;
 
     private void Awake()
     {
         _playerInput = new PlayerInput();
-        _playerInput.Player.ClickOnFigure.performed += _ => _isClicked = true;
-        _playerInput.Player.ClickOnFigure.canceled += _ => _isClicked = false;
+        _playerInput.Player.ClickOnFigure.performed += OnClickPerformed;
     }
 
     private void OnEnable() => _playerInput.Enable();
@@ -23,30 +23,15 @@ public class PlayerInputHandler : MonoBehaviour
         Cursor.visible = true;
     }
 
-    private void OnDisable() => _playerInput.Disable();
-
-    public async UniTask GetPlayerInput(List<int> playerIndexes)
+    private void OnDisable()
     {
-        Vector3 hitPoint = Vector3.zero;
+        _playerInput.Player.ClickOnFigure.performed -= OnClickPerformed;
+        _playerInput.Disable();
+    }
 
-        while (hitPoint == Vector3.zero)
-        {
-            if (_isClicked)
-            {
-                Vector3 mousePosition = Mouse.current.position.ReadValue();
-                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
-
-                if (Physics.Raycast(ray, out RaycastHit hit))
-                {
-                    hitPoint = hit.point;
-
-                    (int i, int j) = CoordinateTranslator.Position2Indexes(hitPoint);
-                    playerIndexes.Add(i);
-                    playerIndexes.Add(j);
-                }
-            }
-
-            await UniTask.Yield();
-        }
+    private void OnClickPerformed(InputAction.CallbackContext context)
+    {
+        _clickPosition = Mouse.current.position.ReadValue();
+        ClickPerformed?.Invoke(_clickPosition);
     }
 }
