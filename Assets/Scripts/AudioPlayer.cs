@@ -14,11 +14,9 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
     [SerializeField] private CheckersLogic _logic;
-    [SerializeField] private AudioSource _audioSource;
+    [SerializeField] private AudioSource[] _audioSources;
 
-    private int _clipIndex;
-
-    private void Awake() => _audioSource = GetComponent<AudioSource>();
+    private void Awake() => _audioSources = GetComponents<AudioSource>();
 
     private void OnEnable()
     {
@@ -38,20 +36,23 @@ public class AudioPlayer : MonoBehaviour
         _logic.GameEnding -= PlayGameEndingSound;
     }
 
+    private void PlaySound(AudioResource audioResource)
+    {
+        AudioSource audioSource = _audioSources[0].isPlaying ? _audioSources[1] : _audioSources[0];
+        audioSource.resource = audioResource;
+        audioSource.Play();
+    }
+
     private async UniTask PlayPutSound(int i, int j, int index)
     {
         await UniTask.Yield();
-
-        _audioSource.resource = _putResource;
-        _audioSource.Play();
+        PlaySound(_putResource);
     }
 
     private async UniTask PlayMoveSound(List<int> moveIndex)
     {
         await UniTask.Yield();
-
-        _audioSource.resource = _dragResource;
-        _audioSource.Play();
+        PlaySound(_dragResource);
     }
 
     private async UniTask PlayChopSound(List<int> move)
@@ -63,24 +64,20 @@ public class AudioPlayer : MonoBehaviour
         float distance = Vector3.Distance(startPosition, rivalPosition);
         float chopDelay = (distance / _logic.MoveSpeed);
         await UniTask.WaitForSeconds(chopDelay);
-
-        _audioSource.resource = _chopResource;
-        _audioSource.Play();
+        PlaySound(_chopResource);
     }
 
     private async UniTask PlayDamCreatedSound(int i, int j)
     {
         await UniTask.Yield();
-
-        _audioSource.resource = _damCreatedResource;
-        _audioSource.Play();
+        PlaySound(_damCreatedResource);
     }
 
     private async UniTask PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
-        _audioSource.clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
+        _audioSources[0].clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
         await UniTask.Yield(cancellationToken: token);
 
-        _audioSource.Play();
+        _audioSources[0].Play();
     }
 }

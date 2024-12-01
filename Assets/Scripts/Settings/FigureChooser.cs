@@ -28,7 +28,7 @@ public class FigureChooser : MonoBehaviour
         _playerInput = new PlayerInput();
         _playerInput.FigureChoice.SwapLeft.performed += ctx => SwapFigure(-1).Forget();
         _playerInput.FigureChoice.SwapRight.performed += ctx => SwapFigure(1).Forget();
-        _playerInput.FigureChoice.Choose.performed += ChooseFigure;
+        _playerInput.FigureChoice.Choose.performed += OnFigureChosen;
     }
 
     private void OnEnable()
@@ -77,15 +77,9 @@ public class FigureChooser : MonoBehaviour
     private bool CanSwap(int direction) =>
         (direction < 0 && _currentIndex > 0) || (direction > 0 && _currentIndex < _figurePrefabs.Length - 1);
 
-    private void ChooseFigure(InputAction.CallbackContext context)
+    private void OnFigureChosen(InputAction.CallbackContext _)
     {
-        GameObject chosenFigure = _figurePrefabs[_currentIndex];
-        OnFigureChosen(chosenFigure);
-    }
-
-    private void OnFigureChosen(GameObject figure)
-    {
-        ChosenFigure = figure;
+        ChosenFigure = _figurePrefabs[_currentIndex];
         SceneManager.LoadScene(1);
     }
 }
