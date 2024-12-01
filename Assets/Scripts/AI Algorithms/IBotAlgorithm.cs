@@ -4,5 +4,5 @@ using System.Threading;
 
 public interface IBotAlgorithm
 {
-    UniTask<List<int>> GetMoveAsync(int[,] board, int turn, CheckersLogic logic, CancellationToken cancellationToken);
+    UniTask<List<int>> GetMoveAsync(int[,] board, int playerIndex, List<List<int>> allowedMoves, CancellationToken cancellationToken);
 }

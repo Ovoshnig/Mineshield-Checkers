@@ -10,16 +10,17 @@ public class MonteCarloTreeSearch : IBotAlgorithm
 
     public MonteCarloTreeSearch(CheckersLogic checkersLogic) => _checkersLogic = checkersLogic;
 
-    public async UniTask<List<int>> GetMoveAsync(int[,] board, int turn, CheckersLogic logic, CancellationToken cancellationToken)
+    public async UniTask<List<int>> GetMoveAsync(int[,] board, int playerIndex, List<List<int>> allowedMoves, CancellationToken cancellationToken)
     {
+        int turn = 1;
         MCTNode root = new(board, turn);
 
         List<List<int>> chopIndexes, moveIndexes;
-        logic.EnumerateMoves(board, turn, out chopIndexes, out moveIndexes);
+        _checkersLogic.EnumerateMoves(board, turn, out chopIndexes, out moveIndexes);
         var possibleMoves = chopIndexes.Count > 0 ? chopIndexes : moveIndexes;
 
         foreach (var move in possibleMoves)
-            root.AddChild(new MCTNode(board, turn, move, logic));
+            root.AddChild(new MCTNode(board, turn, move, _checkersLogic));
 
         for (int i = 0; i < MaxIterations; i++)
         {

@@ -40,7 +40,7 @@ public class CheckersLogic : MonoBehaviour
 
         _botAlgorithm = _botAlgorithmType switch
         {
-            "Minimax" => new MinimaxBot(),
+            "Minimax" => new MinimaxBot(this),
             "MCTS" => new MonteCarloTreeSearch(this),
             _ => throw new InvalidOperationException("Unknown bot algorithm type")
         };
@@ -50,7 +50,7 @@ public class CheckersLogic : MonoBehaviour
     {
         await MakeStartPlacement();
         int winnerTurn = await ExecuteGameLoop();
-        await Win(winnerTurn);
+        await Win(winnerTurn, _cts.Token);
     }
 
     private void OnDisable()
@@ -409,11 +409,11 @@ public class CheckersLogic : MonoBehaviour
         return finding;
     }
 
-    private async UniTask<List<int>> GetAIMove(List<List<int>> turnIndexes)
+    private async UniTask<List<int>> GetAIMove(List<List<int>> allowedMoves)
     {
         using CancellationTokenSource cts = new();
 
-        return await _botAlgorithm.GetMoveAsync(_board, _turn % 2, this, cts.Token);
+        return await _botAlgorithm.GetMoveAsync(_board, _turn % 2, allowedMoves, cts.Token);
     }
 
     private void UpdateBoardAfterMove(int[,] board, int i, int j, int iDelta, int jDelta, int oppositeBoardSide, bool isDam)
@@ -474,9 +474,8 @@ public class CheckersLogic : MonoBehaviour
         UpdateBoardAfterMove(board, i, j, iDelta, jDelta, oppositeBoardSide, isDam);
     }
 
-    private async UniTask Win(int winnerTurn)
+    private async UniTask Win(int winnerTurn, CancellationToken token)
     {
-        CancellationToken token = _cts.Token;
         await GameEnding.InvokeAndWaitAsync(winnerTurn, _gameEndingDuration, token);
 
         SceneManager.LoadScene(0);
