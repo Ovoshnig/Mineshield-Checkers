@@ -2,14 +2,11 @@ using Cysharp.Threading.Tasks;
 using System.Threading;
 using UnityEngine;
 
-[RequireComponent (typeof(ParticleSystem))]
 public class ParticleSpawner : MonoBehaviour
 {
-    [SerializeField] private Color[] _colors;
-    [SerializeField] private ParticleSystem _particleSystem;
+    [SerializeField] private ParticleSystem _winParticleSystem;
+    [SerializeField] private ParticleSystem _loseParticleSystem;
     [SerializeField] private CheckersLogic _logic;
-
-    private void Awake() => _particleSystem = GetComponent<ParticleSystem>();
 
     private void OnEnable() => _logic.GameEnding += PlayEndParticles;
 
@@ -17,7 +14,11 @@ public class ParticleSpawner : MonoBehaviour
 
     private async UniTask PlayEndParticles(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
-        _particleSystem.Play();
         await UniTask.Yield(cancellationToken: token);
+
+        if (winnerTurn % 2 == 0)
+            _winParticleSystem.Play();
+        else
+            _loseParticleSystem.Play();
     }
 }
