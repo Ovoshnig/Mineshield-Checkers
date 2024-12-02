@@ -15,7 +15,8 @@ public class AudioPlayer : MonoBehaviour
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
     [SerializeField] private CheckersLogic _logic;
-    [SerializeField] private List<AudioSource> _audioSources;
+
+    private List<AudioSource> _audioSources;
 
     private void Awake() => _audioSources = GetComponents<AudioSource>().ToList();
 

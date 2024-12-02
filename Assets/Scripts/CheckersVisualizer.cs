@@ -7,12 +7,12 @@ using DG.Tweening;
 public class CheckersVisualizer : MonoBehaviour
 {
     [SerializeField] private float _initialFigureSize;
-    [SerializeField] private float _normalFigureSize;
     [SerializeField] private float _appearanceDuration;
     [SerializeField] private float _disappearanceDuration;
     [SerializeField] private float _crownAppearanceDuration;
     [SerializeField] private float _jumpDuration;
     [SerializeField] private float _jumpPower;
+    [SerializeField] private Vector3 _expansedFigureScale;
     [SerializeField] private List<GameObject> _figurePrefabs;
     [SerializeField] private GameObject _crownPrefab;
     [SerializeField] private GameObject _selectionCube;
@@ -74,10 +74,8 @@ public class CheckersVisualizer : MonoBehaviour
         Transform figureTransform = figure.transform;
         _figureTransforms[i, j] = figureTransform;
 
-        Vector3 scale = figureTransform.localScale;
         figureTransform.localScale = _initialFigureSize * Vector3.one;
-
-        await figure.transform.DOScale(_normalFigureSize * scale, _appearanceDuration)
+        await figure.transform.DOScale(Vector3.one, _appearanceDuration)
             .AsyncWaitForCompletion();
     }
 
@@ -175,11 +173,11 @@ public class CheckersVisualizer : MonoBehaviour
     {
         await UniTask.WaitForSeconds(startJumpDelay, cancellationToken: token);
 
-        Tween expansion = figureTransform.DOBlendableScaleBy(new Vector3(0.4f, -0.3f, 0.4f), _jumpDuration * 0.5f)
+        Tween expansion = figureTransform.DOScale(_expansedFigureScale, _jumpDuration * 0.5f)
             .SetEase(Ease.InOutSine);
         Tween jump = figureTransform.DOJump(figureTransform.position, _jumpPower, 1, _jumpDuration * 0.5f)
             .SetEase(Ease.OutQuad);
-        Tween compression = figureTransform.DOBlendableScaleBy(new Vector3(-0.4f, 0.3f, -0.4f), _jumpDuration * 0.2f)
+        Tween compression = figureTransform.DOScale(Vector3.one, _jumpDuration * 0.2f)
             .SetEase(Ease.InOutSine);
 
         Sequence jumpSequence = DOTween.Sequence();
