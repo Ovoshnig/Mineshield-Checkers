@@ -63,7 +63,7 @@ public class MinimaxBot : IBotAlgorithm
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                GameBoard newBoard = new GameBoard(gameBoard.CloneBoard());
+                GameBoard newBoard = new(gameBoard.CloneBoard());
                 newBoard.ApplyMove(move, currentPlayer);
 
                 int eval = Minimax(newBoard, depth - 1, alpha, beta, false, playerIndex, cancellationToken);
@@ -85,7 +85,7 @@ public class MinimaxBot : IBotAlgorithm
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                GameBoard newBoard = new GameBoard(gameBoard.CloneBoard());
+                GameBoard newBoard = new(gameBoard.CloneBoard());
                 newBoard.ApplyMove(move, currentPlayer);
 
                 int eval = Minimax(newBoard, depth - 1, alpha, beta, true, playerIndex, cancellationToken);

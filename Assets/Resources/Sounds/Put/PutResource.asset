@@ -31,7 +31,7 @@ AudioRandomContainer:
   m_Pitch: 0
   m_AutomaticTriggerTime: 0
   m_LoopCount: 1
-  m_VolumeRandomizationRange: {x: -2, y: 2}
+  m_VolumeRandomizationRange: {x: -3, y: 3}
   m_PitchRandomizationRange: {x: -100, y: 100}
   m_AutomaticTriggerTimeRandomizationRange: {x: 0, y: 0}
   m_LoopCountRandomizationRange: {x: 0, y: 0}
@@ -39,7 +39,7 @@ AudioRandomContainer:
   - {fileID: 3738181571047789328}
   - {fileID: -7876861333124373032}
   m_AvoidRepeatingLast: 0
-  m_PlaybackMode: 2
+  m_PlaybackMode: 0
   m_TriggerMode: 1
   m_AutomaticTriggerMode: 1
   m_LoopMode: 1

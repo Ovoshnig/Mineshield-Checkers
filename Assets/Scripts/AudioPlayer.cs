@@ -1,24 +1,22 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.Audio;
 
 [RequireComponent(typeof(AudioSource))]
 public class AudioPlayer : MonoBehaviour
 {
-    [SerializeField] private AudioResource _putResource;
-    [SerializeField] private AudioResource _dragResource;
-    [SerializeField] private AudioResource _chopResource;
-    [SerializeField] private AudioResource _damCreatedResource;
+    [SerializeField] private AudioClip[] _putClips;
+    [SerializeField] private AudioClip[] _dragClips;
+    [SerializeField] private AudioClip[] _chopClips;
+    [SerializeField] private AudioClip _damCreatedClip;
     [SerializeField] private AudioClip _winClip;
     [SerializeField] private AudioClip _lossClip;
     [SerializeField] private CheckersLogic _logic;
 
-    private List<AudioSource> _audioSources;
+    private AudioSource _audioSource;
 
-    private void Awake() => _audioSources = GetComponents<AudioSource>().ToList();
+    private void Awake() => _audioSource = GetComponent<AudioSource>();
 
     private void OnEnable()
     {
@@ -38,37 +36,18 @@ public class AudioPlayer : MonoBehaviour
         _logic.GameEnding -= PlayGameEndingSound;
     }
 
-    private void PlaySound(AudioResource audioResource)
-    {
-        AudioSource idleAudioSource = _audioSources.FirstOrDefault(a => !a.isPlaying);
-        AudioSource audioSource;
-
-        if (idleAudioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-
-            _audioSources.Add(audioSource);
-        }
-        else
-        {
-            audioSource = idleAudioSource;
-        }
-
-        audioSource.resource = audioResource;
-        audioSource.Play();
-    }
+    private void PlaySound(AudioClip[] clips) => _audioSource.PlayOneShotRandomly(clips, (0.6f, 1f), (0.95f, 1.05f));
 
     private async UniTask PlayPutSound(int i, int j, int index)
     {
         await UniTask.Yield();
-        PlaySound(_putResource);
+        PlaySound(_putClips);
     }
 
     private async UniTask PlayMoveSound(List<int> moveIndex)
     {
         await UniTask.Yield();
-        PlaySound(_dragResource);
+        PlaySound(_dragClips);
     }
 
     private async UniTask PlayChopSound(List<int> move)
@@ -79,21 +58,22 @@ public class AudioPlayer : MonoBehaviour
         Vector3 rivalPosition = CoordinateTranslator.Indexes2Position(rivalI, rivalJ);
         float distance = Vector3.Distance(startPosition, rivalPosition);
         float chopDelay = (distance / _logic.MoveSpeed);
+
         await UniTask.WaitForSeconds(chopDelay);
-        PlaySound(_chopResource);
+        PlaySound(_chopClips);
     }
 
     private async UniTask PlayDamCreatedSound(int i, int j)
     {
         await UniTask.Yield();
-        PlaySound(_damCreatedResource);
+        _audioSource.PlayOneShot(_damCreatedClip);
     }
 
     private async UniTask PlayGameEndingSound(int winnerTurn, float gameEndingDuration, CancellationToken token)
     {
-        _audioSources[0].clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
+        _audioSource.clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
         await UniTask.Yield(cancellationToken: token);
 
-        _audioSources[0].Play();
+        _audioSource.Play();
     }
 }
