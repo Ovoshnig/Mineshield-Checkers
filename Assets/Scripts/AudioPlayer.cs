@@ -86,9 +86,10 @@ public class AudioPlayer : MonoBehaviour
         _audioSource.volume = 1f;
         _audioSource.pitch = 1f;
 
-        _audioSource.clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
-        await UniTask.Yield(cancellationToken: token);
-
+        AudioClip clip = winnerTurn % 2 == 0 ? _winClip : _lossClip;
+        _audioSource.clip = clip;
         _audioSource.Play();
+
+        await UniTask.WaitForSeconds(clip.length, cancellationToken: token);
     }
 }

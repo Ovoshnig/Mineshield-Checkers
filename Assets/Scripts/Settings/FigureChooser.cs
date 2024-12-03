@@ -63,7 +63,11 @@ public class FigureChooser : MonoBehaviour
             return;
 
         _isMoving = true;
-        _audioSource.Play();
+
+        _audioSource
+            .SetRandomVolume()
+            .SetRandomPitch()
+            .Play();
 
         _currentIndex += direction;
         float targetPositionX = transform.position.x + direction * -_offset;
