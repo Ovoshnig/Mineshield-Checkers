@@ -4,40 +4,27 @@ using UnityEngine;
 
 public static class AudioRandomizerExtension
 {
-    public static void PlayRandomly(this AudioSource audioSource, IEnumerable<AudioClip> clips,
-        (float, float) randomVolumeRange, (float, float) randomPitchRange)
+    public static AudioClip GetRandomClip(this IEnumerable<AudioClip> clips)
     {
-        int randomIndex = Random.Range(0, clips.Count());
-        AudioClip randomClip = clips.ToArray()[randomIndex];
+        if (clips == null || !clips.Any())
+            return null;
 
-        var (minVolume, maxVolume) = randomVolumeRange;
-        float randomVolume = Random.Range(minVolume, maxVolume);
-
-        var (minPitch, maxPitch) = randomPitchRange;
-        float randomPitch = Random.Range(minPitch, maxPitch);
-
-        audioSource.volume = randomVolume;
-        audioSource.pitch = randomPitch;
-        audioSource.clip = randomClip;
-
-        audioSource.Play();
+        return clips.ElementAt(Random.Range(0, clips.Count()));
     }
 
-    public static void PlayOneShotRandomly(this AudioSource audioSource, IEnumerable<AudioClip> clips,
-        (float, float) randomVolumeRange, (float, float) randomPitchRange)
+    public static AudioSource SetRandomVolume(this AudioSource source, float minValue = 0.75f, float maxValue = 1f)
     {
-        int randomIndex = Random.Range(0, clips.Count());
-        AudioClip randomClip = clips.ToArray()[randomIndex];
+        float randomVolume = Random.Range(minValue, maxValue);
+        source.volume = randomVolume;
 
-        var (minVolume, maxVolume) = randomVolumeRange;
-        float randomVolume = Random.Range(minVolume, maxVolume);
+        return source;
+    }
 
-        var (minPitch, maxPitch) = randomPitchRange;
-        float randomPitch = Random.Range(minPitch, maxPitch);
+    public static AudioSource SetRandomPitch(this AudioSource source, float minValue = 0.9f, float maxValue = 1.1f)
+    {
+        float randomPitch = Random.Range(minValue, maxValue);
+        source.pitch = randomPitch;
 
-        audioSource.volume = randomVolume;
-        audioSource.pitch = randomPitch;
-
-        audioSource.PlayOneShot(randomClip);
+        return source;
     }
 }
