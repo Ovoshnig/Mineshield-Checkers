@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Cysharp.Threading.Tasks;
 
 public static class EventExtensions
 {
-    public static async UniTask InvokeAndWaitAsync(this Delegate eventDelegate, params object[] args)
+    public static async UniTask InvokeAndWaitWhenAllAsync(this Delegate eventDelegate, params object[] args)
     {
         if (eventDelegate == null) 
             return;
@@ -25,7 +24,7 @@ public static class EventExtensions
         await UniTask.WhenAll(tasks);
     }
 
-    public static async UniTask InvokeAndWaitAsync(this Delegate eventDelegate, CancellationToken cancellationToken, params object[] args)
+    public static async UniTask InvokeAndWaitWhenAnyAsync(this Delegate eventDelegate, params object[] args)
     {
         if (eventDelegate == null)
             return;
@@ -35,24 +34,13 @@ public static class EventExtensions
 
         foreach (var handler in invocationList)
         {
-            var parameters = handler.Method.GetParameters();
-
-            if (parameters.Length > 0 && parameters[^1].ParameterType == typeof(CancellationToken))
+            if (handler is Delegate uniTaskHandler)
             {
-                object[] updatedArgs = new object[args.Length + 1];
-                Array.Copy(args, updatedArgs, args.Length);
-                updatedArgs[^1] = cancellationToken;
-
-                var task = (UniTask)handler.DynamicInvoke(updatedArgs);
-                tasks.Add(task);
-            }
-            else
-            {
-                var task = (UniTask)handler.DynamicInvoke(args);
+                var task = (UniTask)uniTaskHandler.DynamicInvoke(args);
                 tasks.Add(task);
             }
         }
 
-        await UniTask.WhenAll(tasks);
+        await UniTask.WhenAny(tasks);
     }
 }

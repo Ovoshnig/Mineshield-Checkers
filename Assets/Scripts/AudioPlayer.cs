@@ -36,7 +36,7 @@ public class AudioPlayer : MonoBehaviour
         _logic.GameEnding -= PlayGameEndingSound;
     }
 
-    private void PlaySoundRandomly(AudioClip[] clips)
+    private async UniTask PlaySoundRandomly(AudioClip[] clips, CancellationToken token)
     {
         AudioClip clip = clips.GetRandomClip();
 
@@ -44,21 +44,21 @@ public class AudioPlayer : MonoBehaviour
             .SetRandomVolume(0.6f, 1f)
             .SetRandomPitch(0.9f, 1.1f)
             .PlayOneShot(clip);
+
+        await UniTask.WaitForSeconds(clip.length, cancellationToken: token);
     }
 
-    private async UniTask PlayPutSound(int i, int j, int index)
+    private async UniTask PlayPutSound(int i, int j, int index, CancellationToken token)
     {
-        await UniTask.Yield();
-        PlaySoundRandomly(_putClips);
+        await PlaySoundRandomly(_putClips, token);
     }
 
-    private async UniTask PlayMoveSound(List<int> moveIndex)
+    private async UniTask PlayMoveSound(List<int> moveIndex, CancellationToken token)
     {
-        await UniTask.Yield();
-        PlaySoundRandomly(_dragClips);
+        await PlaySoundRandomly(_dragClips, token);
     }
 
-    private async UniTask PlayChopSound(List<int> move)
+    private async UniTask PlayChopSound(List<int> move, CancellationToken token)
     {
         var (i, j, rivalI, rivalJ) = (move[0], move[1], move[4], move[5]);
 
@@ -68,10 +68,10 @@ public class AudioPlayer : MonoBehaviour
         float chopDelay = (distance / _logic.MoveSpeed);
 
         await UniTask.WaitForSeconds(chopDelay);
-        PlaySoundRandomly(_chopClips);
+        await PlaySoundRandomly(_chopClips, token);
     }
 
-    private async UniTask PlayDamCreatedSound(int i, int j)
+    private async UniTask PlayDamCreatedSound(int i, int j, CancellationToken token)
     {
         await UniTask.Yield();
 

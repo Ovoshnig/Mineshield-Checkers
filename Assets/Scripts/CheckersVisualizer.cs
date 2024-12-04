@@ -1,8 +1,8 @@
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using System.Threading;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
 
 public class CheckersVisualizer : MonoBehaviour
 {
@@ -65,7 +65,7 @@ public class CheckersVisualizer : MonoBehaviour
         _logic.GameEnding -= PlayEndingAnimation;
     }
 
-    private async UniTask PlaceFigure(int i, int j, int index)
+    private async UniTask PlaceFigure(int i, int j, int index, CancellationToken token)
     {
         Vector3 position = CoordinateTranslator.Indexes2Position(i, j);
 
@@ -76,7 +76,7 @@ public class CheckersVisualizer : MonoBehaviour
 
         figureTransform.localScale = _initialFigureSize * Vector3.one;
         await figure.transform.DOScale(Vector3.one, _appearanceDuration)
-            .AsyncWaitForCompletion();
+            .ToUniTask(cancellationToken: token);
     }
 
     private void ChangeSelection(List<int> indexes, bool shoodSelect)
@@ -92,7 +92,7 @@ public class CheckersVisualizer : MonoBehaviour
         _selectionCube.SetActive(shoodSelect);
     }
 
-    private async UniTask Move(List<int> move) 
+    private async UniTask Move(List<int> move, CancellationToken token) 
     {
         (int i, int j, int iDelta, int jDelta) = (move[0], move[1], move[2], move[3]);
 
@@ -105,13 +105,13 @@ public class CheckersVisualizer : MonoBehaviour
 
         await _figureTransform.DOMove(_endPosition, moveDuration)
             .SetEase(Ease.Linear)
-            .AsyncWaitForCompletion();
+            .ToUniTask(cancellationToken: token);
 
         _figureTransforms[i + iDelta, j + jDelta] = _figureTransform;
         _figureTransforms[i, j] = null;
     }
 
-    private async UniTask Chop(List<int> move)
+    private async UniTask Chop(List<int> move, CancellationToken token)
     {
         var (i, j, rivalI, rivalJ) = (move[0], move[1], move[4], move[5]);
 
@@ -121,15 +121,15 @@ public class CheckersVisualizer : MonoBehaviour
         float chopDelay = (distance / _logic.MoveSpeed);
         Transform choppedFigureTransform = _figureTransforms[rivalI, rivalJ];
 
-        await UniTask.WaitForSeconds(chopDelay);
+        await UniTask.WaitForSeconds(chopDelay, cancellationToken: token);
         await choppedFigureTransform.DOScale(_initialFigureSize * Vector3.one, _disappearanceDuration)
-            .AsyncWaitForCompletion();
+            .ToUniTask(cancellationToken: token);
 
         Destroy(choppedFigureTransform.gameObject);
         _figureTransforms[rivalI, rivalJ] = null;
     }
 
-    private async UniTask CreateDam(int i, int j)
+    private async UniTask CreateDam(int i, int j, CancellationToken token)
     {
         Transform figureTransform = _figureTransforms[i, j];
         Vector3 figurePosition = figureTransform.position;
@@ -144,7 +144,7 @@ public class CheckersVisualizer : MonoBehaviour
 
         await crownTransform.DOMoveY(positionY, _crownAppearanceDuration)
             .SetEase(Ease.InQuad)
-            .AsyncWaitForCompletion();
+            .ToUniTask(cancellationToken: token);
     }
 
     private async UniTask PlayEndingAnimation(int winnerTurn, float gameEndingDuration, CancellationToken token)
@@ -186,6 +186,6 @@ public class CheckersVisualizer : MonoBehaviour
             .Append(expansion)
             .Append(jump)
             .Join(compression)
-            .AsyncWaitForCompletion();
+            .ToUniTask(cancellationToken: token);
     }
 }

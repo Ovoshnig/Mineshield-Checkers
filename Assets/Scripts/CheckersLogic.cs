@@ -20,11 +20,11 @@ public class CheckersLogic : MonoBehaviour
     private IBotAlgorithm _botAlgorithm;
     private int _turn = 0;
 
-    public event Func<int, int, int, UniTask> FigurePlaced;
+    public event Func<int, int, int, CancellationToken, UniTask> FigurePlaced;
     public event Action<List<int>, bool> FigureSelected;
-    public event Func<List<int>, UniTask> FigureMoved;
-    public event Func<List<int>, UniTask> FigureChopped;
-    public event Func<int, int, UniTask> DamCreated;
+    public event Func<List<int>, CancellationToken, UniTask> FigureMoved;
+    public event Func<List<int>, CancellationToken, UniTask> FigureChopped;
+    public event Func<int, int, CancellationToken, UniTask> DamCreated;
     public event Func<int, float, CancellationToken, UniTask> GameEnding;
 
     public float MoveSpeed => _moveSpeed;
@@ -66,10 +66,11 @@ public class CheckersLogic : MonoBehaviour
             for (int j = 0; j < 8; j++)
             {
                 int piece = _gameBoard.Board[i, j];
+
                 if (piece != -1)
                 {
                     int playerIndex = piece % 2;
-                    FigurePlaced?.Invoke(i, j, playerIndex);
+                    FigurePlaced?.Invoke(i, j, playerIndex, token);
                     await UniTask.WaitForSeconds(_placementDelay, cancellationToken: token);
                 }
             }
@@ -225,22 +226,22 @@ public class CheckersLogic : MonoBehaviour
         bool isChop = move.Count >= 6;
 
         if (isChop)
-            FigureChopped?.Invoke(move);
+            FigureChopped?.Invoke(move, token);
 
         bool promoted = _gameBoard.ApplyMove(move, _turn, ref _figureCounts);
 
-        await FigureMoved.InvokeAndWaitAsync(token, move);
+        await FigureMoved.InvokeAndWaitWhenAllAsync(move, token);
 
         int i = move[0] + move[2];
         int j = move[1] + move[3];
 
         if (promoted)
-            await DamCreated.InvokeAndWaitAsync(token, i, j);
+            await DamCreated.InvokeAndWaitWhenAllAsync(i, j, token);
     }
 
     private async UniTask Win(int winnerTurn, CancellationToken token)
     {
-        await GameEnding.InvokeAndWaitAsync(winnerTurn, _gameEndingDuration, token);
+        await GameEnding.InvokeAndWaitWhenAllAsync(winnerTurn, _gameEndingDuration, token);
 
         SceneManager.LoadScene(0);
     }
