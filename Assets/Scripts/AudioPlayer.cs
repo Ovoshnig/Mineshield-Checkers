@@ -50,12 +50,14 @@ public class AudioPlayer : MonoBehaviour
 
     private async UniTask PlayPutSound(int i, int j, int index, CancellationToken token)
     {
-        await PlaySoundRandomly(_putClips, token);
+        await UniTask.Yield();
+        PlaySoundRandomly(_putClips, token).Forget();
     }
 
     private async UniTask PlayMoveSound(List<int> moveIndex, CancellationToken token)
     {
-        await PlaySoundRandomly(_dragClips, token);
+        await UniTask.Yield();
+        PlaySoundRandomly(_dragClips, token).Forget();
     }
 
     private async UniTask PlayChopSound(List<int> move, CancellationToken token)

@@ -7,12 +7,9 @@ public class FigureSelectionModel
     public int CurrentIndex { get; set; }
 
     public static GameObject ChosenFigure { get; set; } = null;
-    public static int ChosenDifficulty { get; set; } = 3;
+    public static int ChosenDifficulty { get; set; } = 4;
 
-    public FigureSelectionModel(GameObject[] figurePrefabs)
-    {
-        _figurePrefabs = figurePrefabs;
-    }
+    public FigureSelectionModel(GameObject[] figurePrefabs) => _figurePrefabs = figurePrefabs;
 
     public bool CanSwap(int direction)
     {
