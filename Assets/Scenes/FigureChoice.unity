@@ -954,6 +954,7 @@ GameObject:
   - component: {fileID: 855652054}
   - component: {fileID: 855652055}
   - component: {fileID: 855652053}
+  - component: {fileID: 855652056}
   m_Layer: 0
   m_Name: Figures
   m_TagString: Untagged
@@ -985,9 +986,11 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 2ec2d90afaacfdb45bf5e0866210595d, type: 3}
   - {fileID: 919132149155446097, guid: e851fe529729b5446a93067626542b79, type: 3}
   - {fileID: 919132149155446097, guid: e40a9af7613a4a94489d63ee7b5fcc19, type: 3}
-  _difficultySlider: {fileID: 1366541576}
   _offset: 5.5
-  _duration: 0.6
+  _swapDuration: 0.6
+  _rotationDuration: 5
+  _difficultySlider: {fileID: 1366541577}
+  _sceneLoader: {fileID: 855652056}
 --- !u!4 &855652054
 Transform:
   m_ObjectHideFlags: 0
@@ -1100,6 +1103,19 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &855652056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 855652052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9b2de9f5247a0d4691b880960eb5aed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _gameSceneIndex: 1
 --- !u!1 &1033215672
 GameObject:
   m_ObjectHideFlags: 0
@@ -1146,7 +1162,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1075352522}
   - component: {fileID: 1075352523}
-  - component: {fileID: 1075352524}
   m_Layer: 0
   m_Name: DifficultySlider
   m_TagString: Untagged
@@ -1201,20 +1216,6 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
---- !u!114 &1075352524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1075352521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 20374bd7700994b47a97b060700a8295, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _slider: {fileID: 1366541576}
-  _text: {fileID: 1501742568}
 --- !u!1 &1135846258
 GameObject:
   m_ObjectHideFlags: 0
@@ -1406,6 +1407,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1366541575}
   - component: {fileID: 1366541576}
+  - component: {fileID: 1366541577}
   m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
@@ -1486,6 +1488,18 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1366541577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366541574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28f9b308ee36c6446bbc0291ce7434ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1501742566
 GameObject:
   m_ObjectHideFlags: 0
@@ -1497,6 +1511,7 @@ GameObject:
   - component: {fileID: 1501742567}
   - component: {fileID: 1501742569}
   - component: {fileID: 1501742568}
+  - component: {fileID: 1501742570}
   m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1622,6 +1637,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1501742566}
   m_CullTransparentMesh: 1
+--- !u!114 &1501742570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1501742566}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20374bd7700994b47a97b060700a8295, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _difficultySlider: {fileID: 1366541577}
 --- !u!1 &1592953340
 GameObject:
   m_ObjectHideFlags: 0

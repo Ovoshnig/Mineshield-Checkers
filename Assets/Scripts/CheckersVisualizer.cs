@@ -27,14 +27,14 @@ public class CheckersVisualizer : MonoBehaviour
     {
         int index;
 
-        if (FigureChooser.ChosenFigure == null)
+        if (FigureSelectionModel.ChosenFigure == null)
         {
             index = Random.Range(0, _figurePrefabs.Count);
             _playerFigures[0] = _figurePrefabs[index];
         }
         else
         {
-            _playerFigures[0] = FigureChooser.ChosenFigure;
+            _playerFigures[0] = FigureSelectionModel.ChosenFigure;
         }
 
         _figurePrefabs.Remove(_playerFigures[0]);

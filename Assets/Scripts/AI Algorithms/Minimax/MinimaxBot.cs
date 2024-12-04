@@ -7,7 +7,7 @@ public class MinimaxBot : IBotAlgorithm
 {
     private readonly int _maxDepth;
 
-    public MinimaxBot() => _maxDepth = FigureChooser.ChosenDifficulty;
+    public MinimaxBot() => _maxDepth = FigureSelectionModel.ChosenDifficulty;
 
     public async UniTask<List<int>> GetMoveAsync(int[,] board, int playerIndex, List<List<int>> allowedMoves, CancellationToken cancellationToken)
     {
