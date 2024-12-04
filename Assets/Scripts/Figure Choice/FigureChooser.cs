@@ -61,6 +61,7 @@ public class FigureChooser : MonoBehaviour
         _cts.Cancel();
         _cts = new CancellationTokenSource();
         _rotator.UpdateCancellationToken(_cts.Token);
+        _rotator.ResetRotation(_view.GetCurrentFigure(_model.CurrentIndex));
 
         _audioSource.SetRandomVolume().SetRandomPitch().Play();
 

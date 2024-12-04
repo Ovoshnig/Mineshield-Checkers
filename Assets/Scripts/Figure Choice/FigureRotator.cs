@@ -23,9 +23,11 @@ public class FigureRotator
         Vector3 targetRotation = new(0f, 360f, 0f);
 
         figure.transform.DORotate(targetRotation, _rotationDuration, RotateMode.FastBeyond360)
-            .SetLoops(-1, LoopType.Incremental)
+            .SetLoops(-1, LoopType.Yoyo)
             .SetEase(Ease.Linear)
             .ToUniTask(cancellationToken: _token)
             .Forget();
     }
+
+    public void ResetRotation(GameObject figure) => figure.transform.localRotation = Quaternion.identity;
 }
