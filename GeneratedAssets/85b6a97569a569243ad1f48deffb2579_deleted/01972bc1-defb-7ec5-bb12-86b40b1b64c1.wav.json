@@ -1,0 +1,11 @@
+{
+    "asset": "85b6a97569a569243ad1f48deffb2579",
+    "fileName": "01972bc1-defb-7ec5-bb12-86b40b1b64c1.wav",
+    "prompt": "Minecraft ghast scream",
+    "negativePrompt": "",
+    "model": "0ee39b33-2893-4e0f-8c46-0e0bdd4eda85",
+    "customSeed": -1,
+    "duration": 4.5,
+    "autoTrim": true,
+    "hasReference": false
+}

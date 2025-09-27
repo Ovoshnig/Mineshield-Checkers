@@ -10,6 +10,16 @@ AudioContainerElement:
   m_AudioClip: {fileID: 8300000, guid: b38cacaffd7c1704283e99ec976b2304, type: 3}
   m_Volume: 0
   m_Enabled: 1
+--- !u!1233149941 &614167122886419046
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Put3_{614167122886419046}
+  m_AudioClip: {fileID: 8300000, guid: ecb6eda947254cf4c94de831a2c6911a, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
 --- !u!1233149941 &3738181571047789328
 AudioContainerElement:
   m_ObjectHideFlags: 1
@@ -38,8 +48,9 @@ AudioRandomContainer:
   m_Elements:
   - {fileID: 3738181571047789328}
   - {fileID: -7876861333124373032}
+  - {fileID: 614167122886419046}
   m_AvoidRepeatingLast: 0
-  m_PlaybackMode: 0
+  m_PlaybackMode: 2
   m_TriggerMode: 1
   m_AutomaticTriggerMode: 1
   m_LoopMode: 1

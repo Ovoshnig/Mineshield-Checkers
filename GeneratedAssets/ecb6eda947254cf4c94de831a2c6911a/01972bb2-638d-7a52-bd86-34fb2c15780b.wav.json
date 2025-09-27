@@ -1,0 +1,11 @@
+{
+    "asset": "ecb6eda947254cf4c94de831a2c6911a",
+    "fileName": "01972bb2-638d-7a52-bd86-34fb2c15780b.wav",
+    "prompt": "Chess figure put",
+    "negativePrompt": "",
+    "model": "0ee39b33-2893-4e0f-8c46-0e0bdd4eda85",
+    "customSeed": -1,
+    "duration": 1.0,
+    "autoTrim": true,
+    "hasReference": false
+}

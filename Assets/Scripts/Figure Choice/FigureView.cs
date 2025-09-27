@@ -2,6 +2,7 @@
 using UnityEngine;
 using DG.Tweening;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
 public class FigureView
 {
@@ -29,11 +30,14 @@ public class FigureView
 
     public GameObject GetCurrentFigure(int currentIndex) => _figures[currentIndex];
 
-    public async UniTask AnimateSwap(Transform transform, int direction, float swapDuration)
+    public async UniTask AnimateSwap(Transform transform,
+        int direction,
+        float swapDuration,
+        CancellationToken token)
     {
         float targetPositionX = transform.position.x + direction * -_offset;
         await transform.DOMoveX(targetPositionX, swapDuration)
             .SetEase(Ease.InOutSine)
-            .ToUniTask();
+            .ToUniTask(cancellationToken: token);
     }
 }

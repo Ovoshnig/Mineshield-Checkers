@@ -5,13 +5,16 @@ using System.Threading;
 
 public class FigureRotator
 {
+    private readonly Ease _ease;
     private readonly float _rotationDuration;
+
     private CancellationToken _token;
 
-    public FigureRotator(float rotationDuration, CancellationToken token)
+    public FigureRotator(float rotationDuration, Ease ease, CancellationToken token)
     {
         _rotationDuration = rotationDuration;
         _token = token;
+        _ease = ease;
     }
 
     public void UpdateCancellationToken(CancellationToken token) => _token = token;
@@ -24,7 +27,7 @@ public class FigureRotator
 
         figure.transform.DORotate(targetRotation, _rotationDuration, RotateMode.FastBeyond360)
             .SetLoops(-1, LoopType.Yoyo)
-            .SetEase(Ease.Linear)
+            .SetEase(_ease)
             .ToUniTask(cancellationToken: _token)
             .Forget();
     }

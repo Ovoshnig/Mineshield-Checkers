@@ -1,0 +1,18 @@
+{
+    "asset": "2390195b1e0433f42acf5241e36e8a1e",
+    "fileName": "01972bbe-02d0-7099-831a-be720d255422.png",
+    "prompt": "Chess paw",
+    "negativePrompt": "",
+    "model": "242b56c1-2224-41c4-8949-2ba760bbfc69",
+    "customSeed": -1,
+    "refinementMode": "Generation",
+    "pixelateTargetSize": 0,
+    "pixelateKeepImageSize": false,
+    "pixelatePixelBlockSize": 0,
+    "pixelateMode": 0,
+    "pixelateOutlineThickness": 0,
+    "doodles": {
+        "m_Items": []
+    },
+    "upscaleFactor": 0
+}

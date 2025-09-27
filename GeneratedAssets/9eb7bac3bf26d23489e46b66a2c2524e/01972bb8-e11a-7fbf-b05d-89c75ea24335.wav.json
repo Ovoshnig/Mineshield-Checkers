@@ -1,0 +1,11 @@
+{
+    "asset": "9eb7bac3bf26d23489e46b66a2c2524e",
+    "fileName": "01972bb8-e11a-7fbf-b05d-89c75ea24335.wav",
+    "prompt": "Перетаскивание шахматной фигуры по доске",
+    "negativePrompt": "",
+    "model": "0ee39b33-2893-4e0f-8c46-0e0bdd4eda85",
+    "customSeed": -1,
+    "duration": 0.527999997138977,
+    "autoTrim": true,
+    "hasReference": true
+}

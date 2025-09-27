@@ -1,16 +1,18 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 
 public class FigureChooser : MonoBehaviour
 {
     [SerializeField] private GameObject[] _figurePrefabs;
+    [SerializeField] private DifficultySlider _difficultySlider;
+    [SerializeField] private SceneLoader _sceneLoader;
+    [SerializeField] private Ease _rotationEase;
     [SerializeField] private float _offset = 1f;
     [SerializeField] private float _swapDuration = 0.6f;
     [SerializeField] private float _rotationDuration = 5f;
-    [SerializeField] private DifficultySlider _difficultySlider;
-    [SerializeField] private SceneLoader _sceneLoader;
 
     private FigureSelectionModel _model;
     private FigureView _view;
@@ -18,6 +20,7 @@ public class FigureChooser : MonoBehaviour
     private FigureInputHandler _inputHandler;
     private AudioSource _audioSource;
     private CancellationTokenSource _cts;
+    private bool _isSwapping = false;
 
     private void Awake()
     {
@@ -26,7 +29,7 @@ public class FigureChooser : MonoBehaviour
 
         _model = new FigureSelectionModel(_figurePrefabs);
         _view = new FigureView(transform, _figurePrefabs, _offset);
-        _rotator = new FigureRotator(_rotationDuration, _cts.Token);
+        _rotator = new FigureRotator(_rotationDuration, _rotationEase, _cts.Token);
         _inputHandler = new FigureInputHandler(OnSwapLeft, OnSwapRight, OnFigureChosen);
 
         _difficultySlider.ValueChanged += diff => FigureSelectionModel.ChosenDifficulty = (int)diff;
@@ -55,20 +58,26 @@ public class FigureChooser : MonoBehaviour
 
     private async UniTask SwapFigure(int direction)
     {
-        if (!_model.CanSwap(direction))
+        if (_isSwapping || !_model.CanSwap(direction))
             return;
 
         _cts.Cancel();
+        _cts.Dispose();
         _cts = new CancellationTokenSource();
+
+        _isSwapping = true;
+
         _rotator.UpdateCancellationToken(_cts.Token);
         _rotator.ResetRotation(_view.GetCurrentFigure(_model.CurrentIndex));
 
         _audioSource.SetRandomVolume().SetRandomPitch().Play();
 
         _model.CurrentIndex += direction;
-        await _view.AnimateSwap(transform, direction, _swapDuration);
+        await _view.AnimateSwap(transform, direction, _swapDuration, _cts.Token);
 
         _rotator.Rotate(_view.GetCurrentFigure(_model.CurrentIndex));
+
+        _isSwapping = false;
     }
 
     private void OnFigureChosen(InputAction.CallbackContext _)

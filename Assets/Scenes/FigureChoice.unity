@@ -986,11 +986,12 @@ MonoBehaviour:
   - {fileID: 919132149155446097, guid: 2ec2d90afaacfdb45bf5e0866210595d, type: 3}
   - {fileID: 919132149155446097, guid: e851fe529729b5446a93067626542b79, type: 3}
   - {fileID: 919132149155446097, guid: e40a9af7613a4a94489d63ee7b5fcc19, type: 3}
+  _difficultySlider: {fileID: 1366541577}
+  _sceneLoader: {fileID: 855652056}
+  _rotationEase: 1
   _offset: 5.5
   _swapDuration: 0.6
   _rotationDuration: 5
-  _difficultySlider: {fileID: 1366541577}
-  _sceneLoader: {fileID: 855652056}
 --- !u!4 &855652054
 Transform:
   m_ObjectHideFlags: 0
@@ -1016,7 +1017,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 24300002, guid: 0b5e9ed52cd5e0b4ab17f2652abfe128, type: 2}
-  m_audioClip: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
+  m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: f6ed52e6b1763734a9b128deba12db66, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
